@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Std.Out", "Std.Out\Std.Out.csproj", "{BD924B6C-4EAE-495A-90F8-C6D75BF67906}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Std.Out.Cli", "Std.Out.Cli\Std.Out.Cli.csproj", "{BD924B6C-4EAE-495A-90F8-C6D75BF67906}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Std.Out.Infrastructure", "Std.Out.Infrastructure\Std.Out.Infrastructure.csproj", "{1189A2E4-BFF4-466F-A289-CBB114EA8262}"
 EndProject
