@@ -3,7 +3,7 @@ using FrameworkContainers.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Std.Out.Cli.Services;
+using Std.Out.Cli.Commands;
 using Std.Out.Core.Models.Config;
 
 namespace Std.Out.Cli
@@ -13,9 +13,6 @@ namespace Std.Out.Cli
         private const int _success = 0, _error = 1, _validation = 2;
 
         /**
-         * General Rules:
-         * If there is only one entry for the verb in app settings, that can be used as the default; and the key can be omitted from the args.
-         * 
          * [CloudWatch]
          * cw --key widgets --cid b6408f5a-6893-4fb7-b996-3946371ab57f
          * --key: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.

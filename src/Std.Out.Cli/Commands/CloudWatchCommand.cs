@@ -4,47 +4,32 @@ using Std.Out.Cli.Models;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 
-namespace Std.Out.Cli.Services
+namespace Std.Out.Cli.Commands
 {
-    public interface ICommandService
+    public interface ICloudWatchCommand
     {
-        Task<Response<Either<BadRequest, Unit>>> Execute(string[] args);
+        Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class CommandService(
-        ICommandParser _parser,
+    public sealed class CloudWatchCommand(
         IOptions<CloudWatchConfig> _cloudWatchConfig, ICloudWatchService _cloudWatchService
-        ) : ICommandService
+        ) : ICloudWatchCommand
     {
-        public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
+        public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
-            var cmd = _parser.Parse(args);
-            if (!cmd) return response.With(new BadRequest());
-            var command = cmd.Value;
 
-            if (Verb.CloudWatch.Equals(command.Verb))
+            var source = GetSourceModel(command.SettingsKey, _cloudWatchConfig.Value);
+            var logs = await source.BindAsync(x => _cloudWatchService.Query(x, command.CorrelationId));
+            if (!source) response = response.With(new BadRequest());
+
+            if (logs)
             {
-                var source = GetSourceModel(command.SettingsKey, _cloudWatchConfig.Value);
-                var logs = await source.BindAsync(x => _cloudWatchService.Query(x, command.CorrelationId));
-                if (!source) response = response.With(new BadRequest());
-
-                if (logs)
+                foreach (var log in logs.Value)
                 {
-                    foreach (var log in logs.Value)
-                    {
-                        Console.WriteLine(log);
-                    }
-                    response = response.With(Unit.Instance);
+                    Console.WriteLine(log);
                 }
-            }
-            else if (Verb.S3.Equals(command.Verb))
-            {
-                // TODO: Implement S3 command.
-            }
-            else if (Verb.DynamoDB.Equals(command.Verb))
-            {
-                // TODO: Implement DynamoDB command.
+                response = response.With(Unit.Instance);
             }
 
             return response;

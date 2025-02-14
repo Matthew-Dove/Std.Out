@@ -1,0 +1,38 @@
+﻿using ContainerExpressions.Containers;
+using Std.Out.Cli.Models;
+
+namespace Std.Out.Cli.Commands
+{
+    public interface ICommandService
+    {
+        Task<Response<Either<BadRequest, Unit>>> Execute(string[] args);
+    }
+
+    public sealed class CommandService(
+        ICommandParser _parser, ICloudWatchCommand _cw
+        ) : ICommandService
+    {
+        public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
+        {
+            var response = new Response<Either<BadRequest, Unit>>();
+            var cmd = _parser.Parse(args);
+            if (!cmd) return response.With(new BadRequest());
+            var command = cmd.Value;
+
+            if (Verb.CloudWatch.Equals(command.Verb))
+            {
+                response = await _cw.Execute(command);
+            }
+            else if (Verb.S3.Equals(command.Verb))
+            {
+                // TODO: Implement S3 command.
+            }
+            else if (Verb.DynamoDB.Equals(command.Verb))
+            {
+                // TODO: Implement DynamoDB command.
+            }
+
+            return response;
+        }
+    }
+}

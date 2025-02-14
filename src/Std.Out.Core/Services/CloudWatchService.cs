@@ -18,8 +18,13 @@ namespace Std.Out.Core.Services
 
         public async Task<Response<string[]>> Query(CloudWatchSourceModel source, string correlationId)
         {
-            var response = new Response<string[]>();
+            var queryRequest = BuildQuery(source, correlationId);
+            var response = await QueryLogs(queryRequest, source);
+            return response;
+        }
 
+        private static StartQueryRequest BuildQuery(CloudWatchSourceModel source, string correlationId)
+        {
             var endTime = DateTimeOffset.UtcNow;
             var startTime = endTime.AddHours(-source.RelativeHours);
 
@@ -61,26 +66,30 @@ namespace Std.Out.Core.Services
                 | sort @timestamp desc
                 """;
 
+            return new StartQueryRequest
+            {
+                LogGroupNames = new List<string>(source.LogGroups),
+                StartTime = startTime.ToUnixTimeMilliseconds(),
+                EndTime = endTime.ToUnixTimeMilliseconds(),
+                Limit = source.Limit,
+                QueryString = query
+            };
+        }
+
+        private static async Task<Response<string[]>> QueryLogs(StartQueryRequest queryRequest, CloudWatchSourceModel source)
+        {
+            var response = new Response<string[]>();
+
             try
             {
-                var startQueryRequest = new StartQueryRequest
-                {
-                    LogGroupNames = new List<string>(source.LogGroups),
-                    StartTime = startTime.ToUnixTimeMilliseconds(),
-                    EndTime = endTime.ToUnixTimeMilliseconds(),
-                    Limit = source.Limit,
-                    QueryString = query
-                };
-                var startQueryResponse = await _client.StartQueryAsync(startQueryRequest);
-
+                var queryResponse = await _client.StartQueryAsync(queryRequest);
+                var queryPoll = new GetQueryResultsRequest { QueryId = queryResponse.QueryId };
                 GetQueryResultsResponse queryResults;
-                var queryPoll = new GetQueryResultsRequest { QueryId = startQueryResponse.QueryId };
+                await Task.Delay(500);
 
-                do
-                {
-                    await Task.Delay(500);
+                do {
                     queryResults = await _client.GetQueryResultsAsync(queryPoll);
-
+                    await Task.Delay(150);
                 } while (
                     queryResults.HttpStatusCode == HttpStatusCode.OK && (
                     queryResults.Status == QueryStatus.Running || queryResults.Status == QueryStatus.Scheduled
