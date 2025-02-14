@@ -6,4 +6,9 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.409.22" />
+    <PackageReference Include="FrameworkContainers" Version="4.2.0" />
+  </ItemGroup>
+
 </Project>

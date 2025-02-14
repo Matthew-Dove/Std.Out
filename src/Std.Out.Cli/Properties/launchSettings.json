@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Std.Out.Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "cw --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da"
+    }
+  }
+}
