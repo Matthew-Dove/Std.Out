@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Std.Out.Cli.Commands;
 using Std.Out.Core.Models.Config;
+using System.Reflection;
 
 namespace Std.Out.Cli
 {
@@ -60,7 +61,9 @@ namespace Std.Out.Cli
 
         private static IHost BuildHost(string[] args)
         {
-            var builder = Host.CreateApplicationBuilder(args);
+            var root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = args, ContentRootPath = root });
+
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {

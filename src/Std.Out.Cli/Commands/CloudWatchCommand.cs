@@ -29,6 +29,7 @@ namespace Std.Out.Cli.Commands
                 {
                     Console.WriteLine(log);
                 }
+                Console.WriteLine("{0} logs found.", logs.Value.Length);
                 response = response.With(Unit.Instance);
             }
 

@@ -24,9 +24,9 @@
     public sealed class Option
     {
         public const string Key = "--key";
-        public const string K = "--k";
+        public const string K = "-k";
 
         public const string CorrelationId = "--cid";
-        public const string C = "--c";
+        public const string C = "-c";
     }
 }

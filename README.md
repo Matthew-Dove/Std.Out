@@ -1,22 +1,34 @@
 # Std.Out
 
-Captures output of a program to assist with future debugging.  
+Captures output of a program to assist with debugging.  
 This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.  
 
 ![Console Standard Out Visualization](assets/ConsoleStandardOut.webp)  
+
+# Nuget
+
+[.NET CLI](https://www.nuget.org/packages/md.stdout.cli)
+```console
+dotnet tool install --global md.stdout.cli
+```
+
+**RUN**
+```console
+stdout verb [options]
+```
 
 # Tracing
 
 Pulls data from various sources, and displays them:
 * **CloudWatch:** Gathers related messages across log streams, and groups.
-* **S3:** Download assets files.
-* **DynamoDB:** Load related records.
+* **S3:** Download assets files (_WIP_).
+* **DynamoDB:** Load related records (_WIP_).
 
 # CLI
 
 **CloudWatch**
 ```console
-cw --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
+stdout cw --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 
 --key: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
 --cid: The Correlation Id to filter the logs by.
@@ -24,7 +36,7 @@ cw --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 
 **S3**
 ```console
-s3 --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
+stdout s3 --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 
 --key: The name of the configuration in app settings, that defines the bucket, and path prefix.
 --cid: The Correlation Id is part of (or all) of the key, the target files are found under the prefix + correlation id.
@@ -32,7 +44,7 @@ s3 --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 
 **DynamoDB**
 ```console
-db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
+stdout db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
 
 --key: The name of the configuration in app settings, that defines the table name, and index to use.
 --pk: The Partition Key for an item.
@@ -40,6 +52,14 @@ db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
 ```
 
 # AppSettings
+
+The `appsettings.json` file is found at the tool's installed location.  
+* **Windows:** `%USERPROFILE%\.dotnet\tools`
+* **macOS/Linux:** `$HOME/.dotnet/tools`
+
+From there the relative apth is: `.store\md.stdout.cli\{VERSION}\md.stdout.cli\{VERSION}\tools\{RUNTIME}\any`  
+Where `{VERSION}` is the installed package's version, i.e "**1.0.2**".  
+Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".  
 
 ```json
 {
@@ -94,7 +114,7 @@ db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
 In this example `AnotherAppName` overrides the `Filters` value from `Defaults`.   
 The "app names" under `Sources` are matched to the `--key` command line argument.  
 ```console
-cw --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
+stdout cw --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
 ```
 
 If sensible defaults can be applied to all sources, then you would only need to set the `LogGroups` for each logical "app".  
@@ -117,3 +137,11 @@ Otherwise you can have custom settings for each app under `Sources`.
 ## 1.0.0
 
 * Created console app project, and readme file.
+
+## 1.0.1
+
+* Added diagnostics to determine why settings aren't loading.
+
+## 1.0.2
+
+* Removed diagnostics, fixed pathing issues to the settings file.

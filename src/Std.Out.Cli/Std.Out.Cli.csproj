@@ -5,6 +5,26 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <PublishTrimmed>False</PublishTrimmed>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Title>Standard Out</Title>
+    <Version>1.0.2</Version>
+    <Authors>Dovenator</Authors>
+    <PackageId>md.stdout.cli</PackageId>
+    <Description>Captures output of a program to assist with debugging.
+This project is tailored towards AWS services, and is not suitable for general purpose diagnostics. </Description>
+    <Copyright>Matthew Dove. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/Matthew-Dove/Std.Out</PackageProjectUrl>
+    <PackageIcon>dove.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>aws;cloudwatch;logs;</PackageTags>
+    <PackageReleaseNotes>First release of Std.Out, queries CloudWatch log groups though the console.</PackageReleaseNotes>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>stdout</ToolCommandName>
+    <PackageOutputPath>..\..\nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,11 +34,26 @@
 
   <ItemGroup>
     <Content Include="appsettings.debug.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\dove.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
