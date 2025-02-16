@@ -12,24 +12,24 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CloudWatchCommand(
-        IOptions<CloudWatchConfig> _cloudWatchConfig, ICloudWatchService _cloudWatchService
+        IOptions<CloudWatchConfig> _config, ICloudWatchService _service
         ) : ICloudWatchCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var source = GetSourceModel(command.SettingsKey, _cloudWatchConfig.Value);
-            var logs = await source.BindAsync(x => _cloudWatchService.Query(x, command.CorrelationId));
+            var source = GetSourceModel(command.SettingsKey, _config.Value);
             if (!source) response = response.With(new BadRequest());
 
+            var logs = await source.BindAsync(x => _service.Query(x, command.CorrelationId));
             if (logs)
             {
                 foreach (var log in logs.Value)
                 {
                     Console.WriteLine(log);
                 }
-                Console.WriteLine("{0} logs found.", logs.Value.Length);
+                logs.LogValue(x => "{Count} logs found.".WithArgs(x.Value.Length));
                 response = response.With(Unit.Instance);
             }
 

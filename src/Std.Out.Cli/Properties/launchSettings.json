@@ -2,7 +2,7 @@
   "profiles": {
     "Std.Out.Cli": {
       "commandName": "Project",
-      "commandLineArgs": "cw --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da"
+      "commandLineArgs": "s3 --key appname --cid e5fa6b0d-de56-4f5c-85be-5d4c029cda29"
     }
   }
 }

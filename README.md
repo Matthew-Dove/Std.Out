@@ -21,7 +21,7 @@ stdout verb [options]
 
 Pulls data from various sources, and displays them:
 * **CloudWatch:** Gathers related messages across log streams, and groups.
-* **S3:** Download assets files (_WIP_).
+* **S3:** Download assets files.
 * **DynamoDB:** Load related records (_WIP_).
 
 # CLI
@@ -39,7 +39,7 @@ stdout cw --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 stdout s3 --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
 
 --key: The name of the configuration in app settings, that defines the bucket, and path prefix.
---cid: The Correlation Id is part of (or all) of the key, the target files are found under the prefix + correlation id.
+--cid: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
 ```
 
 **DynamoDB**
@@ -53,11 +53,8 @@ stdout db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-0
 
 # AppSettings
 
-The `appsettings.json` file is found at the tool's installed location.  
-* **Windows:** `%USERPROFILE%\.dotnet\tools`
-* **macOS/Linux:** `$HOME/.dotnet/tools`
-
-From there the relative apth is: `.store\md.stdout.cli\{VERSION}\md.stdout.cli\{VERSION}\tools\{RUNTIME}\any`  
+The `appsettings.json` file is found at the tool's installed location: `%USERPROFILE%\.dotnet\tools`  
+From there the relative path is: `.store\md.stdout.cli\{VERSION}\md.stdout.cli\{VERSION}\tools\{RUNTIME}\any`  
 Where `{VERSION}` is the installed package's version, i.e "**1.0.2**".  
 Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".  
 
@@ -104,6 +101,18 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
         ]
       }
     }
+  },
+  "S3": {
+    "Defaults": {
+      "ContentType": "json",
+      "BrowserDisplay": "chrome"
+    },
+    "Sources": {
+      "AppName": {
+        "Bucket": "bucketName",
+        "Prefix": "assets/text/<CID>/"
+      }
+    }
   }
 }
 ```
@@ -128,6 +137,21 @@ Otherwise you can have custom settings for each app under `Sources`.
 * `Fields:` The CloudWatch fields to select from the query (_optional: @timestamp, @message_).
 * `Filters:` Clauses to add to the query, each filter will be in the form: "_and key = value_" (_optional: omitted from query_).
 
+## S3
+
+`Defaults` are applied to all `Sources` that don't override the property value with their own.  
+In this example `AppName` inherits the `ContentType`, and `BrowserDisplay` values from `Defaults`.  
+The "app names" under `Sources` are matched to the `--key` command line argument.  
+```console
+stdout s3 --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
+```
+
+* `Bucket:` The S3 buckname name, where your logging / debugging output files are stored (_required_).
+* `Prefix:` The key path where your files for a particular request can be found under. The Correlation Id from the command line is merged with `<CID>` (_required_).
+* `ContentType:` The expected file contents, used for pretty printing / formatting; only json and the raw contents are supported for now (_optional_).
+* `BrowserDisplay:` The preferred browser to open when displaying the file contents; only chrome and firefox on windows are supported for now (_required_).
+
+
 # Credits
 * [Icon](https://www.flaticon.com/free-icon/bird_2630452) made by [Vitaly Gorbachev](https://www.flaticon.com/authors/vitaly-gorbachev) from [Flaticon](https://www.flaticon.com/)
 * [Standard Out Visualization](https://chatgpt.com/) generated from chatgpt (*DALL.E / OpenAI*).
@@ -145,3 +169,7 @@ Otherwise you can have custom settings for each app under `Sources`.
 ## 1.0.2
 
 * Removed diagnostics, fixed pathing issues to the settings file.
+
+## 1.0.3
+
+* Added support for downloading S3 files, and displaying their contents in the browser.

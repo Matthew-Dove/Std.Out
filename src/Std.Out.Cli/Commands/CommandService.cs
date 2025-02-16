@@ -9,7 +9,7 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CommandService(
-        ICommandParser _parser, ICloudWatchCommand _cw
+        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3
         ) : ICommandService
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
@@ -25,7 +25,7 @@ namespace Std.Out.Cli.Commands
             }
             else if (Verb.S3.Equals(command.Verb))
             {
-                // TODO: Implement S3 command.
+                response = await _s3.Execute(command);
             }
             else if (Verb.DynamoDB.Equals(command.Verb))
             {

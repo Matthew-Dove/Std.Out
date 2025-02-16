@@ -22,7 +22,7 @@ namespace Std.Out.Cli
          * [S3]
          * s3 --key assets --cid b6408f5a-6893-4fb7-b996-3946371ab57f
          * --key: The name of the configuration in app settings, that defines the bucket, and path prefix.
-         * --cid: The Correlation Id is part of (or all) of the key, the target files are found under the prefix + correlation id.
+         * --cid: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
          * 
          * [DynamoDB]
          * db --key orders --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
@@ -67,10 +67,13 @@ namespace Std.Out.Cli
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                builder.Configuration.AddJsonFile("appsettings.debug.json", optional: true, reloadOnChange: false);
+                var path = Path.GetFullPath("../../../appsettings.debug.json");
+                builder.Configuration.AddJsonFile(path, optional: true, reloadOnChange: false);
             }
 #endif
             builder.Services.Configure<CloudWatchConfig>(builder.Configuration.GetSection(CloudWatchConfig.SECTION_NAME));
+            builder.Services.Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME));
+
             builder.Services.AddServicesByConvention("Std.Out.Cli", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");
 
             var host = builder.Build();
