@@ -10,16 +10,10 @@
 
     public sealed class S3SourceModel
     {
+        public DisplayType Display { get; set; }
         public string Bucket { get; set; }
         public string Prefix { get; set; }
         public string ContentType { get; set; }
-        public OpenBrowser BrowserDisplay { get; set; }
-    }
-
-    public enum OpenBrowser
-    {
-        NotSet,
-        Chrome,
-        Firefox
+        public string[] Files { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ContainerExpressions.Containers;
 using Std.Out.Cli.Models;
+using System.Reflection;
 
 namespace Std.Out.Cli.Commands
 {
@@ -16,7 +17,7 @@ namespace Std.Out.Cli.Commands
             if (args.Length < 3) return response.LogErrorValue("{Args}(s) args found, but expected at least 3 arguments (verb, and correlation id).".WithArgs(args.Length));
 
             string key = string.Empty, cid = string.Empty;
-            var kv = GetKeyValues(args);
+            var kv = GetOptionKeyValues(args);
 
             switch (args[0].ToLowerInvariant())
             {
@@ -32,20 +33,46 @@ namespace Std.Out.Cli.Commands
 
                 case "s3":
                     key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-                    cid = kv.GetOptions(Option.CorrelationId, Option.C).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.CorrelationId));
+                    cid = kv.GetOptions(Option.CorrelationId, Option.C);
 
-                    if (!string.Empty.Equals(key) && !string.Empty.Equals(cid))
+                    var path = kv.GetOptions(Option.Path, Option.P);
+
+                    if (!string.Empty.Equals(cid) && !string.Empty.Equals(path)) // Allow either cid, or path to be passed (but not both).
                     {
-                        response = response.With(new CommandModel { Verb = Verb.S3, SettingsKey = key, CorrelationId = cid });
+                        response.LogErrorValue("Cannot pass both {CorrelationId}, and {Path} options at once.".WithArgs(Option.CorrelationId, Option.Path));
+                    }
+                    else if (string.Empty.Equals(cid) && string.Empty.Equals(path)) // Must have one of path, or cid.
+                    {
+                        response.LogErrorValue("Must have at one of {CorrelationId}, and {Path} options.".WithArgs(Option.CorrelationId, Option.Path));
+                    }
+                    else if (!string.Empty.Equals(key))
+                    {
+                        response = response.With(new CommandModel { Verb = Verb.S3, SettingsKey = key, CorrelationId = cid, Path = path });
                     }
                     break;
 
                 case "db":
                     key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
+                    cid = kv.GetOptions(Option.CorrelationId, Option.C);
 
-                    if (!string.Empty.Equals(key))
+                    var pk = kv.GetOptions(Option.PartitionKey, Option.Pk);
+                    var sk = kv.GetOptions(Option.SortKey, Option.Sk);
+
+                    if (!string.Empty.Equals(pk) && !string.Empty.Equals(cid)) // Allow either pk, or cid to be passed (but not both).
                     {
-                        response = response.With(new CommandModel { Verb = Verb.DynamoDB, SettingsKey = key, CorrelationId = string.Empty });
+                        response.LogErrorValue("Cannot pass both {PartitionKey}, and {CorrelationId} options at once.".WithArgs(Option.PartitionKey, Option.CorrelationId));
+                    }
+                    else if (string.Empty.Equals(pk) && string.Empty.Equals(cid)) // Must have one of pk, or cid.
+                    {
+                        response.LogErrorValue("Must have at one of {PartitionKey}, and {CorrelationId} options.".WithArgs(Option.PartitionKey, Option.CorrelationId));
+                    }
+                    else if (!string.Empty.Equals(sk) && !string.Empty.Equals(cid)) // Not valid to send sk, when using cid.
+                    {
+                        response.LogErrorValue("Cannot pass {SortKey}, when using the {CorrelationId} option.".WithArgs(Option.SortKey, Option.CorrelationId));
+                    }
+                    else if (!string.Empty.Equals(key))
+                    {
+                        response = response.With(new CommandModel { Verb = Verb.DynamoDB, SettingsKey = key, CorrelationId = cid, PartitionKey = pk, SortKey = sk });
                     }
                     break;
 
@@ -57,15 +84,16 @@ namespace Std.Out.Cli.Commands
             return response;
         }
 
-        private static Dictionary<string, string> GetKeyValues(string[] args)
+        private static Dictionary<string, string> GetOptionKeyValues(string[] args)
         {
-            var kv = new Dictionary<string, string>((args.Length - 1) / 2);
+            var options = args.Where(x => !x.ToLowerInvariant().IsFlag()).ToArray();
+            var kv = new Dictionary<string, string>((options.Length - 1) / 2);
 
-            for (var i = 1; (i + 2) <= args.Length; i += 2)
+            for (var i = 1; (i + 2) <= options.Length; i += 2)
             {
-                if (!kv.ContainsKey(args[i]))
+                if (!kv.ContainsKey(options[i]))
                 {
-                    kv.Add(args[i].ToLowerInvariant(), args[i + 1]);
+                    kv.Add(options[i].ToLowerInvariant(), options[i + 1]);
                 }
             }
 
@@ -75,6 +103,14 @@ namespace Std.Out.Cli.Commands
 
     file static class CommandExtensions
     {
+        private static readonly string[] _flags = typeof(Flag)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
+            .Select(fi => fi.GetValue(null).ToString().ToLowerInvariant())
+            .ToArray();
+
+        public static bool IsFlag(this string value) => value.StartsWith("-") && _flags.Contains(value);
+
         public static string GetOptions(this Dictionary<string, string> kv, params string[] options)
         {
             var value = string.Empty;

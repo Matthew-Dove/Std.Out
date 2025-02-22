@@ -11,7 +11,14 @@
         /// <summary>The Correlation Id that groups requests, logs, files, etc together.</summary>
         public string CorrelationId { get; set; }
 
-        // TODO: Add DynamoDB args - PK | SK | INDEX | option to reload pk/sk from the index item.
+        /// <summary>The table's PK value to query.</summary>
+        public string PartitionKey { get; set; }
+
+        /// <summary>The table's SK value to query.</summary>
+        public string SortKey { get; set; }
+
+        /// <summary>The prefix key path of a S3 bucket, to retrieve files from.</summary>
+        public string Path { get; set; }
     }
 
     public sealed class Verb
@@ -21,12 +28,27 @@
         public const string DynamoDB = "dynamodb";
     }
 
-    public sealed class Option
+    public static class Option
     {
         public const string Key = "--key";
         public const string K = "-k";
 
         public const string CorrelationId = "--cid";
         public const string C = "-c";
+
+        public const string PartitionKey = "--partitionkey";
+        public const string Pk = "-pk";
+
+        public const string SortKey = "--sortkey";
+        public const string Sk = "-sk";
+
+        public const string Path = "--path";
+        public const string P = "-p";
+    }
+
+    public static class Flag
+    {
+        public const string NoLog = "--nolog";
+        public const string Nl = "-nl";
     }
 }

@@ -1,6 +1,8 @@
 ﻿using ContainerExpressions.Containers;
 using Microsoft.Extensions.Options;
 using Std.Out.Cli.Models;
+using Std.Out.Cli.Services;
+using Std.Out.Core.Models;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 
@@ -12,24 +14,28 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CloudWatchCommand(
-        IOptions<CloudWatchConfig> _config, ICloudWatchService _service
+        IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display
         ) : ICloudWatchCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var source = GetSourceModel(command.SettingsKey, _config.Value);
-            if (!source) response = response.With(new BadRequest());
+            var src = GetSourceModel(command.SettingsKey, _config.Value);
+            if (!src) return response.With(new BadRequest());
+            var source = src.Value;
 
-            var logs = await source.BindAsync(x => _service.Query(x, command.CorrelationId));
-            if (logs)
+            var logGroups = await _service.Query(source, command.CorrelationId);
+            if (logGroups)
             {
-                foreach (var log in logs.Value)
+                int count = 0;
+                foreach (var (group, logs) in logGroups.Value)
                 {
-                    Console.WriteLine(log);
+                    count += logs.Length;
+                    var chunk = string.Join(Environment.NewLine, logs);
+                    _display.Show(source.Display, group, chunk);
                 }
-                logs.LogValue(x => "{Count} logs found.".WithArgs(x.Value.Length));
+                count.LogValue(x => "{Count} logs found.".WithArgs(x));
                 response = response.With(Unit.Instance);
             }
 
@@ -46,6 +52,7 @@ namespace Std.Out.Cli.Commands
             if (source == default) return response.LogErrorValue("CloudWatch source [{Key}] not found.".WithArgs(key));
 
             // Merge source with default model.
+            model.Display = source.Display == DisplayType.NotSet ? @default.Display : source.Display;
             model.LogGroups = source.LogGroups == null || source.LogGroups.Length == 0 ? @default?.LogGroups : source.LogGroups;
             model.Limit = source.Limit == 0 ? (@default?.Limit ?? 0) : source.Limit;
             model.RelativeHours = source.RelativeHours == 0 ? (@default?.RelativeHours ?? 0) : source.RelativeHours;
@@ -57,13 +64,15 @@ namespace Std.Out.Cli.Commands
             // Validate source model.
             var isValid = true;
             isValid = isValid && model.LogGroups != null && model.LogGroups.Length > 0 && model.LogGroups.Count(string.IsNullOrWhiteSpace) == 0;
+            isValid = isValid && model.Limit <= 1000;
             if (model.Fields != null && model.Fields.Length > 0) isValid = isValid && model.Fields.Count(string.IsNullOrWhiteSpace) == 0;
             if (model.Filters != null && model.Filters.Length > 0) isValid = isValid && model.Filters.Count(x => string.IsNullOrWhiteSpace(x.Field) || string.IsNullOrWhiteSpace(x.Value)) == 0;
 
             if (isValid)
             {
                 // Align optional fields.
-                if (model.Limit == 0) model.Limit = 25;
+                if (model.Display == DisplayType.NotSet) model.Display = DisplayType.Console;
+                if (model.Limit == 0) model.Limit = CoreConstants.MaxLimit;
                 if (model.RelativeHours == 0) model.RelativeHours = 1;
                 if (string.IsNullOrWhiteSpace(model.IsPresentFieldName)) model.IsPresentFieldName = string.Empty;
                 if (string.IsNullOrWhiteSpace(model.CorrelationIdFieldName)) model.CorrelationIdFieldName = string.Empty;

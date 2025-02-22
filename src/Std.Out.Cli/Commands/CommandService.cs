@@ -9,12 +9,13 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CommandService(
-        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3
+        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db
         ) : ICommandService
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
         {
             var response = new Response<Either<BadRequest, Unit>>();
+
             var cmd = _parser.Parse(args);
             if (!cmd) return response.With(new BadRequest());
             var command = cmd.Value;
@@ -29,7 +30,7 @@ namespace Std.Out.Cli.Commands
             }
             else if (Verb.DynamoDB.Equals(command.Verb))
             {
-                // TODO: Implement DynamoDB command.
+                response = await _db.Execute(command);
             }
 
             return response;

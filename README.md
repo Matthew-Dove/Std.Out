@@ -1,7 +1,7 @@
 # Std.Out
 
-Captures output of a program to assist with debugging.  
-This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.  
+Captures the output of services to assist with debugging.  
+This project is tailored towards AWS, and is not suitable for general purpose diagnostics.  
 
 ![Console Standard Out Visualization](assets/ConsoleStandardOut.webp)  
 
@@ -14,7 +14,7 @@ dotnet tool install --global md.stdout.cli
 
 **RUN**
 ```console
-stdout verb [options]
+stdout verb [options] [flags]
 ```
 
 # Tracing
@@ -22,46 +22,69 @@ stdout verb [options]
 Pulls data from various sources, and displays them:
 * **CloudWatch:** Gathers related messages across log streams, and groups.
 * **S3:** Download assets files.
-* **DynamoDB:** Load related records (_WIP_).
+* **DynamoDB:** Load items.
 
 # CLI
 
+**Flags**
+```
+stdout verb [options] --nolog
+
+--nolog | -nl: Disable logging to the console.
+```
+
 **CloudWatch**
 ```console
-stdout cw --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
+stdout cw --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
---key: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
---cid: The Correlation Id to filter the logs by.
+--key | -k: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
+--cid | -c: The Correlation Id to filter the logs by.
 ```
 
 **S3**
 ```console
-stdout s3 --key appname --cid b6408f5a-6893-4fb7-b996-3946371ab57f
+stdout s3 --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
---key: The name of the configuration in app settings, that defines the bucket, and path prefix.
---cid: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
+--key | -k: The name of the configuration in app settings, that defines the bucket, and path prefix.
+--cid | -c: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
+
+stdout s3 --key appname --path assets/plaintext/c6b8c804-34cb-4cf7-b762-d24b644831e9
+
+--key | -k: The name of the configuration in app settings, that defines the bucket, and path prefix.
+--path | -p: The prefix key path of a S3 bucket, to retrieve files from (i.e. a static path, not merged with a correlation id at runtime).
 ```
 
 **DynamoDB**
 ```console
-stdout db --key appname --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
+stdout db --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
---key: The name of the configuration in app settings, that defines the table name, and index to use.
---pk: The Partition Key for an item.
---sk: The Sort Key for an item. If not provided, all sks found under the pk are returned.
+--key | -k: The name of the configuration in app settings, that defines the table name, and index to use.
+--cid | -c: The Correlation Id stored in a table's index. Used to get the item's pk, and sk values; in order to load the db item.
+
+stdout db --key appname --partitionkey pk_value
+
+--key | -k: The name of the configuration in app settings, that defines the table name, and index to use.
+--partitionkey | -pk: The Partition Key for an item.
+
+stdout db --key appname --partitionkey pk_value --sortkey sk_value
+
+--key | -k: The name of the configuration in app settings, that defines the table name, and index to use.
+--partitionkey | -pk: The Partition Key for an item.
+--sortkey | -sk: The Sort Key for an item.
 ```
 
 # AppSettings
 
 The `appsettings.json` file is found at the tool's installed location: `%USERPROFILE%\.dotnet\tools`  
 From there the relative path is: `.store\md.stdout.cli\{VERSION}\md.stdout.cli\{VERSION}\tools\{RUNTIME}\any`  
-Where `{VERSION}` is the installed package's version, i.e "**1.0.2**".  
+Where `{VERSION}` is the installed package's version, i.e "**2.0.0**".  
 Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".  
 
 ```json
 {
   "CloudWatch": {
     "Defaults": {
+      "Display": "console|chrome|firefox",
       "Limit": "25",
       "RelativeHours": "1",
       "IsPresentFieldName": "isStructuredLog",
@@ -75,10 +98,6 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
         {
           "Field": "level",
           "Value": "INFO"
-        },
-        {
-          "Field": "eventProperties.customerId",
-          "Value": "12345678"
         }
       ]
     },
@@ -88,47 +107,59 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
           "/aws/lambda/lambda-one",
           "/aws/lambda/lambda-two"
         ]
-      },
-      "AnotherAppName": {
-        "LogGroups": [
-          "/aws/lambda/lambda-three"
-        ],
-        "Filters": [
-          {
-            "Field": "level",
-            "Value": "ERROR"
-          }
-        ]
       }
     }
   },
   "S3": {
     "Defaults": {
-      "ContentType": "json",
-      "BrowserDisplay": "chrome"
+      "Display": "console|chrome|firefox",
+      "ContentType": "json|text"
     },
     "Sources": {
       "AppName": {
         "Bucket": "bucketName",
-        "Prefix": "assets/text/<CID>/"
+        "Prefix": "assets/plaintext/<CID>/",
+        "Files": [
+          "myfile.json"
+        ]
+      }
+    }
+  },
+  "DynamoDb": {
+    "Defaults": {
+      "Display": "console|chrome|firefox",
+      "PartitionKeyName": "pk",
+      "SortKeyName": "sk"
+    },
+    "Sources": {
+      "AppName": {
+        "TableName": "dbCustomers",
+        "IndexName": "gsi1",
+        "IndexPartitionKeyName": "gsi1pk",
+        "IndexSortKeyName": "gsi1sk",
+        "IndexPartitionKeyMask": "pk_<CID>",
+        "IndexSortKeyMask": "sk_<CID>",
+        "Projection": [
+          "name",
+          "email"
+        ]
       }
     }
   }
 }
 ```
 
+`Defaults` are applied to all `Sources` that don't override the property value with their own.   
+The "app names" under `Sources` are matched to the `--key` command line argument. 
+
+If sensible defaults can be applied to all (*or most*) sources, then you would only need to set what's different for each source.  
+Custom settings can be applied for each "app" under `Sources`.  
+
+Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` sections in app settings.   
+
 ## CloudWatch
 
-`Defaults` are applied to all `Sources` that don't override the property value with their own.  
-In this example `AnotherAppName` overrides the `Filters` value from `Defaults`.   
-The "app names" under `Sources` are matched to the `--key` command line argument.  
-```console
-stdout cw --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
-```
-
-If sensible defaults can be applied to all sources, then you would only need to set the `LogGroups` for each logical "app".  
-Otherwise you can have custom settings for each app under `Sources`.  
-
+* `Display:` How you'd like to view the output; console or web browser (_optional: console_).
 * `LogGroups:` An array of log group names from AWS CloudWatch (_required_).
 * `Limit:` The maximum number of logs to return for a query (_optional: 25_).
 * `RelativeHours:` The number of hours to look backwards from "now" (_optional: 1_).
@@ -139,18 +170,24 @@ Otherwise you can have custom settings for each app under `Sources`.
 
 ## S3
 
-`Defaults` are applied to all `Sources` that don't override the property value with their own.  
-In this example `AppName` inherits the `ContentType`, and `BrowserDisplay` values from `Defaults`.  
-The "app names" under `Sources` are matched to the `--key` command line argument.  
-```console
-stdout s3 --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
-```
-
+* `Display:` How you'd like to view the output; console or web browser (_optional: console_).
 * `Bucket:` The S3 buckname name, where your logging / debugging output files are stored (_required_).
 * `Prefix:` The key path where your files for a particular request can be found under. The Correlation Id from the command line is merged with `<CID>` (_required_).
-* `ContentType:` The expected file contents, used for pretty printing / formatting; only json and the raw contents are supported for now (_optional_).
-* `BrowserDisplay:` The preferred browser to open when displaying the file contents; only chrome and firefox on windows are supported for now (_required_).
+* `ContentType:` The expected file contents, used for pretty printing / formatting; only `json`, and `text` are supported for now (_optional_).
+* `Files:` The filenames to download, if found under the prefix path (_optional: downloads all matches_).
 
+## DynamoDB
+
+* `Display:` How you'd like to view the output; console or web browser (_optional: console_).
+* `TableName:` The name of the DynamoDB table (_required_).
+* `PartitionKeyName:` The table's Partition Key name (_required_).
+* `SortKeyName:` The table's Sort Key name (_optional_).
+* `IndexName:` The table's index name, where the correlation id makes up part of the index's pk, or sk (_optional: when not using a correlation id_).
+* `IndexPartitionKeyName:` The name of the index's Partition Key (_optional: when not using a correlation id_).
+* `IndexPartitionKeyMask:` The format of the index's pk, the correlation id from the command line is merged with `<CID>` (_optional: when not using a correlation id_).
+* `IndexSortKeyName:` The name of the index's Sort Key (_optional_).
+* `IndexSortKeyMask:` The format of the index's sk, the correlation id from the command line is merged with `<CID>` (_optional_).
+* `Projection:` The item(*s*) attribute(*s*) to select (_optional: returns all attributes_).
 
 # Credits
 * [Icon](https://www.flaticon.com/free-icon/bird_2630452) made by [Vitaly Gorbachev](https://www.flaticon.com/authors/vitaly-gorbachev) from [Flaticon](https://www.flaticon.com/)
@@ -173,3 +210,8 @@ stdout s3 --key appname --cid 3ee9222f-ed70-475f-8fdc-ee56d1f439da
 ## 1.0.3
 
 * Added support for downloading S3 files, and displaying their contents in the browser.
+
+## 2.0.0
+
+* Some breaking changes to the app settings - allowed the browser, or console display options for every target type (_instead of just S3_).
+* Added support for DynamoDB items, loading by keys directly, and correlation Id via an index.

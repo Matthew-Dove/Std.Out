@@ -3,8 +3,11 @@ using FrameworkContainers.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Std.Out.Cli.Commands;
+using Std.Out.Cli.Models;
 using Std.Out.Core.Models.Config;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Std.Out.Cli
@@ -12,24 +15,6 @@ namespace Std.Out.Cli
     internal class Program
     {
         private const int _success = 0, _error = 1, _validation = 2;
-
-        /**
-         * [CloudWatch]
-         * cw --key widgets --cid b6408f5a-6893-4fb7-b996-3946371ab57f
-         * --key: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
-         * --cid: The Correlation Id to filter the logs by.
-         * 
-         * [S3]
-         * s3 --key assets --cid b6408f5a-6893-4fb7-b996-3946371ab57f
-         * --key: The name of the configuration in app settings, that defines the bucket, and path prefix.
-         * --cid: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
-         * 
-         * [DynamoDB]
-         * db --key orders --pk b6408f5a-6893-4fb7-b996-3946371ab57f --sk 2022-01-01
-         * --key: The name of the configuration in app settings, that defines the table name, and index to use.
-         * --pk: The Partition Key for an item.
-         * --sk: The Sort Key for an item. If not provided, all sks found under the pk are returned.
-        **/
 
         static async Task<int> Main(string[] args)
         {
@@ -39,12 +24,16 @@ namespace Std.Out.Cli
 
             try
             {
+                var sw = Stopwatch.GetTimestamp();
                 host = BuildHost(args);
 
                 var cmd = host.Services.GetRequiredService<ICommandService>();
                 var response = await cmd.Execute(args);
-
                 code = response.Transform(static x => x.Match(static _ => _validation, static _ => _success)).GetValueOrDefault(_error);
+
+                var log = host.Services.GetRequiredService<ILogger<Program>>();
+                var elapsed = Stopwatch.GetElapsedTime(sw);
+                log.LogInformation("Execution time: {Elapsed}ms.", elapsed.TotalMilliseconds);
             }
             catch (Exception ex)
             {
@@ -61,11 +50,12 @@ namespace Std.Out.Cli
 
         private static IHost BuildHost(string[] args)
         {
+            var noLog = args.FirstOrDefault(static x => Flag.NoLog.Equals(x, StringComparison.OrdinalIgnoreCase) || Flag.Nl.Equals(x, StringComparison.OrdinalIgnoreCase)) is not null;
             var root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = args, ContentRootPath = root });
 
 #if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 var path = Path.GetFullPath("../../../appsettings.debug.json");
                 builder.Configuration.AddJsonFile(path, optional: true, reloadOnChange: false);
@@ -73,9 +63,11 @@ namespace Std.Out.Cli
 #endif
             builder.Services.Configure<CloudWatchConfig>(builder.Configuration.GetSection(CloudWatchConfig.SECTION_NAME));
             builder.Services.Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME));
+            builder.Services.Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME));
 
             builder.Services.AddServicesByConvention("Std.Out.Cli", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");
 
+            if (noLog) builder.Logging.ClearProviders();
             var host = builder.Build();
             host.Services.AddContainerExpressionsLogging();
 

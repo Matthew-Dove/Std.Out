@@ -10,6 +10,7 @@
 
     public sealed class CloudWatchSourceModel
     {
+        public DisplayType Display { get; set; }
         public string[] LogGroups { get; set; }
         public int Limit { get; set; }
         public int RelativeHours { get; set; }

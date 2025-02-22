@@ -7,16 +7,18 @@ using System.Text;
 
 namespace Std.Out.Core.Services
 {
+    public sealed class LogGroup : Alias<string> { public LogGroup(string value) : base(value) { } }
+
     public interface ICloudWatchService
     {
-        Task<Response<string[]>> Query(CloudWatchSourceModel source, string correlationId);
+        Task<Response<(LogGroup, string[])[]>> Query(CloudWatchSourceModel source, string correlationId);
     }
 
     public sealed class CloudWatchService : ICloudWatchService
     {
         private static readonly AmazonCloudWatchLogsClient _client = new AmazonCloudWatchLogsClient();
 
-        public async Task<Response<string[]>> Query(CloudWatchSourceModel source, string correlationId)
+        public async Task<Response<(LogGroup, string[])[]>> Query(CloudWatchSourceModel source, string correlationId)
         {
             var queryRequest = BuildQuery(source, correlationId);
             var response = await QueryLogs(queryRequest, source);
@@ -63,7 +65,7 @@ namespace Std.Out.Core.Services
 
             var query = $"""
                 fields {fields}{filter}
-                | sort @timestamp desc
+                | sort @timestamp asc
                 """;
 
             return new StartQueryRequest
@@ -76,9 +78,9 @@ namespace Std.Out.Core.Services
             };
         }
 
-        private static async Task<Response<string[]>> QueryLogs(StartQueryRequest queryRequest, CloudWatchSourceModel source)
+        private static async Task<Response<(LogGroup, string[])[]>> QueryLogs(StartQueryRequest queryRequest, CloudWatchSourceModel source)
         {
-            var response = new Response<string[]>();
+            var response = new Response<(LogGroup, string[])[]>();
 
             try
             {
@@ -87,7 +89,8 @@ namespace Std.Out.Core.Services
                 GetQueryResultsResponse queryResults;
                 await Task.Delay(500);
 
-                do {
+                do
+                {
                     queryResults = await _client.GetQueryResultsAsync(queryPoll);
                     await Task.Delay(150);
                 } while (
@@ -97,12 +100,12 @@ namespace Std.Out.Core.Services
 
                 if (queryResults.Status == QueryStatus.Complete)
                 {
-                    var groupedLogs = source.LogGroups.ToDictionary(x => x.ToLowerInvariant(), x => new List<string>());
-                    var groupedResults = queryResults.Results.GroupBy(x => x.Find(x => x.Field == "@log").Value.Split([':'], 2)[1].ToLowerInvariant());
+                    var groupedResults = queryResults.Results.GroupBy(ExtractLogGroupName);
+                    var result = new List<(LogGroup, string[])>();
 
                     foreach (var group in groupedResults)
                     {
-                        var logs = groupedLogs[group.Key];
+                        var logs = new List<string>();
                         foreach (var value in group)
                         {
                             var sb = new StringBuilder();
@@ -115,10 +118,10 @@ namespace Std.Out.Core.Services
                             var log = sb.ToString();
                             logs.Add(log);
                         }
+                        result.Add((new LogGroup(group.Key), logs.ToArray()));
                     }
 
-                    var result = groupedLogs.Values.SelectMany(x => x).ToArray();
-                    response = response.With(result);
+                    response = response.With(result.ToArray());
                 }
                 else
                 {
@@ -131,6 +134,12 @@ namespace Std.Out.Core.Services
             }
 
             return response;
+        }
+
+        private static string ExtractLogGroupName(List<ResultField> fields)
+        {
+            var logGroup = fields.Find(x => x.Field == "@log").Value;
+            return logGroup.Substring(logGroup.LastIndexOf('/') + 1).ToLowerInvariant();
         }
     }
 }
