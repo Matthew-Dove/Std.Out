@@ -27,7 +27,7 @@ Pulls data from various sources, and displays them:
 # CLI
 
 **Flags**
-```
+```console
 stdout verb [options] --nolog
 
 --nolog | -nl: Disable logging to the console.
