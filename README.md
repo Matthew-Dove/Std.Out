@@ -172,7 +172,7 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 
 * `Display:` How you'd like to view the output; console or web browser (_optional: console_).
 * `Bucket:` The S3 buckname name, where your logging / debugging output files are stored (_required_).
-* `Prefix:` The key path where your files for a particular request can be found under. The Correlation Id from the command line is merged with `<CID>` (_required_).
+* `Prefix:` The key path where your files for a particular request can be found under. The Correlation Id from the command line is merged with `<CID>` (_optional: when not using a correlation id_).
 * `ContentType:` The expected file contents, used for pretty printing / formatting; only `json`, and `text` are supported for now (_optional_).
 * `Files:` The filenames to download, if found under the prefix path (_optional: downloads all matches_).
 

@@ -72,7 +72,7 @@ namespace Std.Out.Cli.Commands
             var isValid = true;
             isValid = isValid && !string.IsNullOrWhiteSpace(model.Bucket);
             isValid = isValid && string.IsNullOrWhiteSpace(model.ContentType) || "json".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase) || "text".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase);
-            isValid = isValid && !string.IsNullOrWhiteSpace(model.Prefix) && model.Prefix.Contains(CliConstants.CidMask);
+            isValid = isValid && ((!string.IsNullOrWhiteSpace(model.Prefix) && model.Prefix.Contains(CliConstants.CidMask)) || !string.Empty.Equals(path));
             isValid = isValid && ((source.Files == null || source.Files.Length == 0) || source.Files.Count(string.IsNullOrWhiteSpace) == 0);
 
             if (isValid)
