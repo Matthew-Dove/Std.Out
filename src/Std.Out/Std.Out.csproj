@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Title>Standard Output</Title>
+    <PackageId>md.stdout</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Matthew Dove</Authors>
+    <Description>Captures output of a program to assist with debugging.
+This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
+
+Loads logs from services via a shared Correlation Id.
+Can pull data from CloudWatch, S3, and DynamoDB.</Description>
+    <Copyright>Matthew Dove. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/Matthew-Dove/Std.Out</PackageProjectUrl>
+    <PackageIcon>dove.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>aws;cloudwatch;logs;</PackageTags>
+    <PackageReleaseNotes>A package to store a request's correlation Id, for future retrieval, and debugging.</PackageReleaseNotes>
+    <PackageOutputPath>..\..\nupkg</PackageOutputPath>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>symbols.nupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\dove.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" />
+    <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

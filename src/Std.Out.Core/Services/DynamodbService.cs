@@ -12,6 +12,7 @@ namespace Std.Out.Core.Services
     {
         Task<Response<string[]>> Query(DynamodbSourceModel source, string pk, string sk);
         Task<Response<string[]>> QueryIndex(DynamodbSourceModel source);
+        Task<Response<Unit>> Put(string tableName, Dictionary<string, string> attributes, string ttlName, long ttl);
     }
 
     public sealed class DynamodbService : IDynamodbService
@@ -118,6 +119,39 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 ex.LogError("Error querying {Index} for table: {Table}, with ix_pk: {IxPk}, ix_sk: {IxSk}.".WithArgs(source.IndexName, source.TableName, source.IndexPartitionKeyMask, source.IndexSortKeyMask));
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Unit>> Put(string tableName, Dictionary<string, string> attributes, string ttlName, long ttl)
+        {
+            var response = new Response<Unit>();
+
+            var item = attributes.Select(x => new KeyValuePair<string, AttributeValue>(x.Key, new AttributeValue { S = x.Value }));
+            var putRequest = new PutItemRequest
+            {
+                TableName = tableName,
+                Item = new Dictionary<string, AttributeValue>(item)
+            };
+            if (ttl > 0) putRequest.Item[ttlName] = new AttributeValue { N = ttl.ToString() };
+
+            try
+            {
+                var putResponse = await _client.PutItemAsync(putRequest);
+
+                if (putResponse.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    response = response.With(Unit.Instance);
+                }
+                else
+                {
+                    putResponse.LogErrorValue(x => "Put failed with HTTP code: {HttpCode}, on table: {Table}.".WithArgs(x.HttpStatusCode, tableName));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.LogError("Error attempting a Put to the table: {Table}.".WithArgs(tableName));
             }
 
             return response;

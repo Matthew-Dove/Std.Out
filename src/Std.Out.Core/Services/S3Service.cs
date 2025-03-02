@@ -3,6 +3,7 @@ using Amazon.S3.Model;
 using ContainerExpressions.Containers;
 using Std.Out.Core.Models;
 using Std.Out.Core.Models.Config;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -13,11 +14,13 @@ namespace Std.Out.Core.Services
     {
         Task<Response<string[]>> List(S3SourceModel source);
         Task<Response<string>> Download(S3SourceModel source, string key);
+        Task<Response<Unit>> Upload(string bucket, string key, string content);
     }
 
     public sealed class S3Service : IS3Service
     {
         private static readonly AmazonS3Client _client = new AmazonS3Client();
+        private static readonly ConcurrentDictionary<string, string> _cache = new ConcurrentDictionary<string, string>();
 
         public async Task<Response<string[]>> List(S3SourceModel source)
         {
@@ -77,6 +80,70 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 ex.LogError("Error getting object: {Key}, from bucket: {Bucket}.".WithArgs(key, source.Bucket));
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Unit>> Upload(string bucket, string key, string content)
+        {
+            var response = new Response<Unit>();
+
+            try
+            {
+                using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                var put = new PutObjectRequest
+                {
+                    BucketName = bucket,
+                    Key = key,
+                    InputStream = ms,
+                    ContentType = key.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "application/json" : "text/plain"
+                };
+
+                var result = await _client.PutObjectAsync(put);
+                if (result.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    response = await CleanUpOldVersions(bucket, key);
+                }
+                else
+                {
+                    result.LogErrorValue(x => "Upload failed with HTTP code: {HttpCode}, for object: {Key}, to bucket: {Bucket}.".WithArgs(x.HttpStatusCode, key, bucket));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.LogError("Error uploading object: {Key}, to bucket: {Bucket}.".WithArgs(key, bucket));
+            }
+
+            return response;
+        }
+
+        private static async Task<Response<Unit>> CleanUpOldVersions(string bucket, string key)
+        {
+            var response = Unit.ResponseSuccess;
+            if (_cache.ContainsKey(bucket)) return response;
+
+            var isVersioned = await _client.GetBucketVersioningAsync(new GetBucketVersioningRequest { BucketName = bucket });
+            if (isVersioned.VersioningConfig.Status != VersionStatus.Enabled)
+            {
+                _cache.TryAdd(bucket, string.Empty);
+                return response;
+            }
+
+            var allVersions = await _client.ListVersionsAsync(new ListVersionsRequest { BucketName = bucket, Prefix = key });
+            var oldVersions = new List<KeyVersion>();
+            foreach (var version in allVersions.Versions)
+            {
+                if (!version.IsLatest)
+                {
+                    oldVersions.Add(new KeyVersion { Key = key, VersionId = version.VersionId });
+                }
+            }
+
+            if (oldVersions.Count > 0)
+            {
+                var delete = await _client.DeleteObjectsAsync(new DeleteObjectsRequest { BucketName = bucket, Objects = oldVersions });
+                if (delete.DeletedObjects.Count != oldVersions.Count) response = Unit.ResponseError;
             }
 
             return response;
