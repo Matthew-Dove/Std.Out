@@ -13,6 +13,7 @@ namespace Std.Out.Core.Services
         Task<Response<string[]>> Query(DynamodbSourceModel source, string pk, string sk);
         Task<Response<string[]>> QueryIndex(DynamodbSourceModel source);
         Task<Response<Unit>> Put(string tableName, Dictionary<string, string> attributes, string ttlName, long ttl);
+        Task<Response<Either<string, NotFound>>> Get(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName, string sortKeyValue);
     }
 
     public sealed class DynamodbService : IDynamodbService
@@ -152,6 +153,51 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 ex.LogError("Error attempting a Put to the table: {Table}.".WithArgs(tableName));
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Either<string, NotFound>>> Get(
+            string tableName,
+            string partitionKeyName, string partitionKeyValue,
+            string sortKeyName, string sortKeyValue
+            )
+        {
+            var response = new Response<Either<string, NotFound>>();
+
+            var getRequest = new GetItemRequest
+            {
+                TableName = tableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { partitionKeyName, new AttributeValue { S = partitionKeyValue } }
+                }
+            };
+
+            if (sortKeyName != string.Empty) getRequest.Key.Add(sortKeyName, new AttributeValue { S = sortKeyValue });
+
+            try
+            {
+                var getResponse = await _client.GetItemAsync(getRequest);
+
+                if (getResponse.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    if (getResponse.Item.Count == 0) response = response.With(new NotFound());
+                    else
+                    {
+                        var json = Document.FromAttributeMap(getResponse.Item).ToJson();
+                        response = response.With(json);
+                    }
+                }
+                else
+                {
+                    getResponse.LogErrorValue(x => "Get failed with HTTP code: {HttpCode}, on table: {Table}.".WithArgs(x.HttpStatusCode, tableName));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.LogError("Error attempting a Get from the table: {Table}.".WithArgs(tableName));
             }
 
             return response;

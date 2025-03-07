@@ -14,6 +14,7 @@ namespace Std.Out.Core.Services
     {
         Task<Response<string[]>> List(S3SourceModel source);
         Task<Response<string>> Download(S3SourceModel source, string key);
+        Task<Response<Either<string, NotFound>>> Download(string bucket, string key);
         Task<Response<Unit>> Upload(string bucket, string key, string content);
     }
 
@@ -65,7 +66,7 @@ namespace Std.Out.Core.Services
                         _ = Try.Run(() =>
                         {
                             using var doc = JsonDocument.Parse(contents);
-                            contents = JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions { WriteIndented = true });
+                            contents = JsonSerializer.Serialize(doc.RootElement, CoreConstants.JsonOptions);
                         },
                         "Error serializing content type: {ContentType}, for object: {Key}, from bucket: {Bucket}.".WithArgs(source.ContentType, key, source.Bucket));
                     }
@@ -80,6 +81,36 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 ex.LogError("Error getting object: {Key}, from bucket: {Bucket}.".WithArgs(key, source.Bucket));
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Either<string, NotFound>>> Download(string bucket, string key)
+        {
+            var response = new Response<Either<string, NotFound>>();
+
+            try
+            {
+                using var result = await _client.GetObjectAsync(bucket, key);
+                if (result.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    using var sr = new StreamReader(result.ResponseStream, Encoding.UTF8);
+                    var contents = await sr.ReadToEndAsync();
+                    response = response.With(contents);
+                }
+                else
+                {
+                    result.LogErrorValue(x => "Download failed with HTTP code: {HttpCode}, for object: {Key}, from bucket: {Bucket}.".WithArgs(x.HttpStatusCode, key, bucket));
+                }
+            }
+            catch (AmazonS3Exception aex) when (aex.StatusCode == HttpStatusCode.NotFound)
+            {
+                response = response.With(new NotFound());
+            }
+            catch (Exception ex)
+            {
+                ex.LogError("Error getting object: {Key}, from bucket: {Bucket}.".WithArgs(key, bucket));
             }
 
             return response;

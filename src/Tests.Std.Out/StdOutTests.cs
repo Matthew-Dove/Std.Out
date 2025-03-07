@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Std.Out;
 using Std.Out.Models;
+using System.IO;
 using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out
@@ -33,17 +34,28 @@ namespace Tests.Std.Out
                 TimeToLiveHours = db.TimeToLiveHours
             };
 
-            _config = new StdConfig(stdDisk/*, stdS3, stdDb*/);
+            _config = new StdConfig(/*stdDisk, stdS3, */stdDb);
             _key = StorageKey.CreateWithEnvironment(key.Application, key.Environment, (key.Namespace, key.Offset.GetValueOrDefault(0)));
             _cid = Guid.NewGuid().ToString();
         }
 
         [Fact]
-        public async Task Test1()
+        public async Task Store()
         {
-            var xxx = await _std.Store(_config, _key, _cid);
+            var result = await _std.Store(_config, _key, _cid);
 
-            Assert.True(xxx.IsValid);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public async Task Load()
+        {
+            var action = $"{typeof(StdOutTests).Namespace}.{nameof(StdOutTests)}.{nameof(Store)}";
+            var key = StorageKey.CreateWithEnvironment(_key.Application, _key.Environment, action);
+
+            var result = await _std.Load(_config, key);
+
+            Assert.True(result.IsValid);
         }
     }
 }

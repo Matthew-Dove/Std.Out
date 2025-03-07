@@ -1,11 +1,15 @@
 ﻿using ContainerExpressions.Containers;
 using Microsoft.Extensions.Logging;
+using Std.Out.Core.Models;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
     public interface IDynamodbStorage
     {
-        Task<Response<Unit>> Store(string path, string actionPath, string correlationId, string table, string partitionKeyName, string sortKeyName, string timeToLiveName, int timeToLiveHours);
+        Task<Response<Unit>> Store(string path, string actionPath, CorrelationDto dto, string table, string partitionKeyName, string sortKeyName, string timeToLiveName, int timeToLiveHours);
+        Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string actionPath, string table, string partitionKeyName, string sortKeyName);
     }
 
     public sealed class DynamodbStorage(
@@ -13,7 +17,7 @@ namespace Std.Out.Core.Services
         ) : IDynamodbStorage
     {
         public async Task<Response<Unit>> Store(
-            string path, string actionPath, string correlationId,
+            string path, string actionPath, CorrelationDto dto,
             string table, string partitionKeyName, string sortKeyName,
             string timeToLiveName, int timeToLiveHours
             )
@@ -31,7 +35,8 @@ namespace Std.Out.Core.Services
                 if (attributes[sortKeyName].StartsWith('/')) attributes[sortKeyName] = attributes[sortKeyName][1..];
             }
 
-            attributes["correlationId"] = correlationId;
+            var properties = ModelToDictionary.Convert(dto);
+            foreach (var kv in properties) attributes[kv.Key] = kv.Value;
 
             var ttlName = string.Empty;
             var ttl = 0L;
@@ -49,15 +54,76 @@ namespace Std.Out.Core.Services
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    _log.LogError(e, "An error occurred storing the correlation Id to DynamoDB [{Table}] ({Path}): {CorrelationId}. {Message}", table, path, correlationId, e.Message);
+                    _log.LogError(e, "An error occurred storing the correlation Id to DynamoDB [{Table}] ({Path}): {CorrelationId}. {Message}", table, path, dto.CorrelationId, e.Message);
                 }
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "An error occurred storing the correlation Id to DynamoDB [{Table}] ({Path}): {CorrelationId}. {Message}", table, path, correlationId, ex.Message);
+                _log.LogError(ex, "An error occurred storing the correlation Id to DynamoDB [{Table}] ({Path}): {CorrelationId}. {Message}", table, path, dto.CorrelationId, ex.Message);
             }
 
             return response;
+        }
+
+        public async Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string actionPath, string table, string partitionKeyName, string sortKeyName)
+        {
+            var response = new Response<Either<CorrelationDto, NotFound>>();
+            string pk = path, sk = string.Empty;
+
+            if (!string.Empty.Equals(sortKeyName))
+            {
+                pk = path[..^actionPath.Length];
+                sk = actionPath;
+
+                if (pk.EndsWith('/')) pk = pk[..^1];
+                if (sk.StartsWith('/')) sk = sk[1..];
+            }
+
+            try
+            {
+                var get = await _db.Get(table, partitionKeyName, pk, sortKeyName, sk);
+                if (get)
+                {
+                    if (get.Value.TryGetT2(out _)) response = response.With(new NotFound());
+                    else
+                    {
+                        _ = get.Value.TryGetT1(out var json);
+                        var dto = JsonSerializer.Deserialize<CorrelationDto>(json, CoreConstants.JsonOptions);
+                        response = response.With(dto);
+                    }
+                }
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    _log.LogError(e, "An error occurred loading the correlation Id from DynamoDB [{Table}] ({Path}): {Message}", table, path, e.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred loading the correlation Id from DynamoDB [{Table}] ({Path}): {Message}", table, path, ex.Message);
+            }
+
+            return response;
+        }
+    }
+
+    file static class ModelToDictionary
+    {
+        public static Dictionary<string, string> Convert<T>(T model) => ModelToDictionary<T>.Convert(model);
+    }
+
+    file static class ModelToDictionary<T>
+    {
+        private static readonly PropertyInfo[] _properties = typeof(T).GetProperties().Where(p => p.CanRead).ToArray();
+
+        public static Dictionary<string, string> Convert(T model)
+        {
+            return _properties.ToDictionary(
+                pi => char.ToLowerInvariant(pi.Name[0]) + pi.Name[1..],
+                pi => pi.GetValue(model)?.ToString() ?? string.Empty
+            );
         }
     }
 }

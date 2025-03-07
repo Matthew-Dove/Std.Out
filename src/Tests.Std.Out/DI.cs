@@ -1,5 +1,4 @@
-﻿using FrameworkContainers.Infrastructure;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -39,9 +38,9 @@ namespace Tests.Std.Out
                 .Configure<StorageKeyConfig>(context.Configuration.GetSection(StorageKeyConfig.SECTION_NAME));
 
                 services
-                .AddServicesByConvention("Std.Out", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");
+                .AddStdOutServices();
             })
-            .Build().Services.AddContainerExpressionsLogging();
+            .Build().Services.AddStdOutLogging();
         }
     }
 }

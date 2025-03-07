@@ -1,44 +1,73 @@
 ﻿using ContainerExpressions.Containers;
 using Microsoft.Extensions.Logging;
+using Std.Out.Core.Models;
+using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
     public interface IDiskStorage
     {
-        Task<Response<Unit>> Write(string path, string correlationId);
+        Task<Response<Unit>> Store(string path, CorrelationDto dto);
+        Task<Response<Either<CorrelationDto, NotFound>>> Load(string path);
     }
 
     public sealed class DiskStorage(
         ILogger<DiskStorage> _log
         ) : IDiskStorage
     {
-        public async Task<Response<Unit>> Write(string path, string correlationId)
+        public async Task<Response<Unit>> Store(string path, CorrelationDto dto)
         {
             var response = new Response<Unit>();
-            var content = $$"""
-                {
-                  "correlationId": "{{correlationId}}"
-                }
-                """;
 
             try
             {
+                var json = JsonSerializer.Serialize(dto, CoreConstants.JsonOptions);
+
                 var directory = Path.GetDirectoryName(path);
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
-                await File.WriteAllTextAsync(path, content);
+                await File.WriteAllTextAsync(path, json);
                 response = response.With(Unit.Instance);
             }
             catch (AggregateException ae)
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    _log.LogError(e, "An error occurred storing the correlation Id to Disk ({Path}): {CorrelationId}. {Message}", path, correlationId, e.Message);
+                    _log.LogError(e, "An error occurred storing the correlation Id to Disk ({Path}): {CorrelationId}. {Message}", path, dto.CorrelationId, e.Message);
                 }
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "An error occurred storing the correlation Id to Disk ({Path}): {CorrelationId}. {Message}", path, correlationId, ex.Message);
+                _log.LogError(ex, "An error occurred storing the correlation Id to Disk ({Path}): {CorrelationId}. {Message}", path, dto.CorrelationId, ex.Message);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Either<CorrelationDto, NotFound>>> Load(string path)
+        {
+            var response = new Response<Either<CorrelationDto, NotFound>>();
+
+            try
+            {
+                if (!File.Exists(path)) response = response.With(new NotFound());
+                else
+                {
+                    var json = await File.ReadAllTextAsync(path);
+                    var dto = JsonSerializer.Deserialize<CorrelationDto>(json, CoreConstants.JsonOptions);
+                    response = response.With(dto);
+                }
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    _log.LogError(e, "An error occurred loading the correlation Id to Disk ({Path}): {Message}", path, e.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred loading the correlation Id to Disk ({Path}): {Message}", path, ex.Message);
             }
 
             return response;
