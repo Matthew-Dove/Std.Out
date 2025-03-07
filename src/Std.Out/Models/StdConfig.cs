@@ -3,6 +3,21 @@
 namespace Std.Out.Models
 {
     /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
+    public sealed class StdConfigOptions
+    {
+        public const string SECTION_NAME = "StdOut";
+
+        /// <summary>Storage configuration for local disk.<summary>
+        public DiskStdConfig Disk { get; set; }
+
+        /// <summary>Storage configuration for AWS S3.<summary>
+        public S3StdConfig S3 { get; set; }
+
+        /// <summary>Storage configuration for AWS DynamoDB.<summary>
+        public DynamoDbStdConfig DynamoDb { get; set; }
+    }
+
+    /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
     public sealed class StdConfig
     {
         /// <summary>Storage configuration for local disk.<summary>
@@ -18,8 +33,8 @@ namespace Std.Out.Models
         public StdConfig(NotNull<DiskStdConfig> disk, NotNull<S3StdConfig> s3) { Disk = disk.ThrowIf(DiskStdConfig.IsNotValid); S3 = s3.ThrowIf(S3StdConfig.IsNotValid); }
         public StdConfig(NotNull<DiskStdConfig> disk, NotNull<DynamoDbStdConfig> dynamoDb) { Disk = disk.ThrowIf(DiskStdConfig.IsNotValid); DynamoDb = dynamoDb.ThrowIf(DynamoDbStdConfig.IsNotValid); }
         public StdConfig(NotNull<DiskStdConfig> disk, NotNull<S3StdConfig> s3, NotNull<DynamoDbStdConfig> dynamoDb) { Disk = disk.ThrowIf(DiskStdConfig.IsNotValid); S3 = s3.ThrowIf(S3StdConfig.IsNotValid); DynamoDb = dynamoDb.ThrowIf(DynamoDbStdConfig.IsNotValid); }
-        public StdConfig(NotNull<S3StdConfig> s3) { S3 = s3.ThrowIf(S3StdConfig.IsNotValid); }
         public StdConfig(NotNull<S3StdConfig> s3, NotNull<DynamoDbStdConfig> dynamoDb) { S3 = s3.ThrowIf(S3StdConfig.IsNotValid); DynamoDb = dynamoDb.ThrowIf(DynamoDbStdConfig.IsNotValid); }
+        public StdConfig(NotNull<S3StdConfig> s3) { S3 = s3.ThrowIf(S3StdConfig.IsNotValid); }
         public StdConfig(NotNull<DynamoDbStdConfig> dynamoDb) { DynamoDb = dynamoDb.ThrowIf(DynamoDbStdConfig.IsNotValid); }
     }
 

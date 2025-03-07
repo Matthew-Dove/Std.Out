@@ -1,6 +1,7 @@
 ﻿using ContainerExpressions.Containers;
 using ContainerExpressions.Expressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Std.Out.Core.Models;
 using Std.Out.Core.Services;
 using Std.Out.Models;
@@ -10,12 +11,29 @@ namespace Std.Out
     /// <summary>The Standard Output service allows you to store, load, and query the last used correlation Id for a particular key; and given source(s).</summary>
     public interface IStdOut
     {
+        /// <summary>
+        /// Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument).</para>
+        /// </summary>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+        /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
+        /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
+        Task<Response<Unit>> Store(StorageKey key, string correlationId);
+
         /// <summary>Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.</summary>
         /// <param name="config">Settings for data storage services, in order to persist the last used correlation Id.</param>
         /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
         /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
         /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
         Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId);
+
+        /// <summary>
+        /// Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument).</para>
+        /// </summary>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+        /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
+        Task<Response<Either<string, NotFound>>> Load(StorageKey key);
 
         /// <summary>Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.</summary>
         /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
@@ -27,11 +45,35 @@ namespace Std.Out
     }
 
     public sealed class StdOut(
-        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db
+        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, IOptions<StdConfigOptions> _options
         ) : IStdOut
     {
         private static readonly Task<Response<Unit>> _store = Task.FromResult(Unit.ResponseSuccess);
         private static readonly Task<Response<Either<CorrelationDto, NotFound>>> _load = Task.FromResult(Response.Create(new Either<CorrelationDto, NotFound>(new NotFound())));
+
+        private static StdConfig GetConfig(StdConfigOptions options)
+        {
+            StdConfig config = null;
+            var disk = options?.Disk;
+            var s3 = options?.S3;
+            var db = options?.DynamoDb;
+
+            if (disk != null && s3 != null && db != null) config = new StdConfig(disk, s3, db);
+            else if (disk != null && db != null) config = new StdConfig(disk, db);
+            else if (disk != null && s3 != null) config = new StdConfig(disk, s3);
+            else if (disk != null) config = new StdConfig(disk);
+            else if (s3 != null && db != null) config = new StdConfig(s3, db);
+            else if (s3 != null) config = new StdConfig(s3);
+            else if (db != null) config = new StdConfig(db);
+
+            return config;
+        }
+
+        public async Task<Response<Unit>> Store(StorageKey key, string correlationId)
+        {
+            var config = GetConfig(_options.Value);
+            return await Store(config, key, correlationId);
+        }
 
         public async Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId)
         {
@@ -47,10 +89,6 @@ namespace Std.Out
                 Task<Response<Unit>> disk = _store, s3 = _store, db = _store;
                 var path = key.ToString();
                 var dto = new CorrelationDto(correlationId);
-
-                // Store, Load, and Query.
-                // DDB: PK = $"{app}/{env}/{user}", SK = $"{action}". PK only is: $"{app}/{env}/{user}/{action}" (i.e. same as folder paths for Disk / S3).
-                // Query is done by loading all "actions" (i.e. folders / SKs) under the combined key segments: $"{app}/{env}/{user}/*".
 
                 if (config.Disk != null)
                 {
@@ -88,6 +126,12 @@ namespace Std.Out
             }
 
             return response;
+        }
+
+        public async Task<Response<Either<string, NotFound>>> Load(StorageKey key)
+        {
+            var config = GetConfig(_options.Value);
+            return await Load(config, key);
         }
 
         public async Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key)

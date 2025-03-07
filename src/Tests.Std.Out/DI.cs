@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Std.Out.Models;
 using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out
@@ -32,13 +33,17 @@ namespace Tests.Std.Out
             .ConfigureServices((context, services) =>
             {
                 services
-                .Configure<DiskConfig>(context.Configuration.GetSection(DiskConfig.SECTION_NAME))
-                .Configure<S3Config>(context.Configuration.GetSection(S3Config.SECTION_NAME))
-                .Configure<DynamoDbConfig>(context.Configuration.GetSection(DynamoDbConfig.SECTION_NAME))
                 .Configure<StorageKeyConfig>(context.Configuration.GetSection(StorageKeyConfig.SECTION_NAME));
 
+                var options = new StdConfigOptions();
+                context.Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
+
                 services
-                .AddStdOutServices();
+                .AddStdOutServices(opt => {
+                    opt.Disk = options.Disk;
+                    opt.S3 = options.S3;
+                    opt.DynamoDb = options.DynamoDb;
+                });
             })
             .Build().Services.AddStdOutLogging();
         }
