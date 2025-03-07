@@ -1,3 +1,4 @@
+using ContainerExpressions.Containers;
 using Microsoft.Extensions.Options;
 using Std.Out;
 using Std.Out.Models;
@@ -37,8 +38,10 @@ namespace Tests.Std.Out
             var key = StorageKey.CreateWithEnvironment(_key.Application, _key.Environment, action);
 
             var result = await _std.Load(key);
+            var isCid = result.Value.TryGetT1(out var cid);
 
-            Assert.True(result.IsValid);
+            Assert.True(isCid);
+            Assert.False(string.IsNullOrEmpty(cid));
         }
     }
 }

@@ -13,6 +13,14 @@ namespace Std.Out
     {
         /// <summary>
         /// Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config, and key arguments).</para>
+        /// </summary>
+        /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
+        /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
+        Task<Response<Unit>> Store(string correlationId);
+
+        /// <summary>
+        /// Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.
         /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument).</para>
         /// </summary>
         /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
@@ -26,6 +34,14 @@ namespace Std.Out
         /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
         /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
         Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId);
+
+        /// <summary>
+        /// Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config, and key arguments).</para>
+        /// </summary>
+        /// <param name="action">The main outcome / objective of this request (i.e. save_customer).</param>
+        /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
+        Task<Response<Either<string, NotFound>>> Load(string action);
 
         /// <summary>
         /// Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.
@@ -51,7 +67,7 @@ namespace Std.Out
         private static readonly Task<Response<Unit>> _store = Task.FromResult(Unit.ResponseSuccess);
         private static readonly Task<Response<Either<CorrelationDto, NotFound>>> _load = Task.FromResult(Response.Create(new Either<CorrelationDto, NotFound>(new NotFound())));
 
-        private static StdConfig GetConfig(StdConfigOptions options)
+        private static StdConfig GetConfig(StdSourceOptions options)
         {
             StdConfig config = null;
             var disk = options?.Disk;
@@ -69,9 +85,33 @@ namespace Std.Out
             return config;
         }
 
+        private static StorageKey GetKey(StorageKeyOptions options, string actionOverride = null)
+        {
+            StorageKey key = null;
+            var app = options?.Application;
+            var env = options?.Environment;
+            var @namespace = options?.Namespace;
+            var offset = options?.Offset ?? 0;
+
+            var action = new Either<string, (string Namespace, int Offset)>((@namespace, offset));
+            if (actionOverride != null) action = actionOverride;
+
+            if (!string.IsNullOrEmpty(env)) key = StorageKey.CreateWithEnvironment(app, env, action);
+            else key = StorageKey.Create(app, action);
+
+            return key;
+        }
+
+        public async Task<Response<Unit>> Store(string correlationId)
+        {
+            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options.Value?.Key);
+            return await Store(config, key, correlationId);
+        }
+
         public async Task<Response<Unit>> Store(StorageKey key, string correlationId)
         {
-            var config = GetConfig(_options.Value);
+            var config = GetConfig(_options.Value?.Sources);
             return await Store(config, key, correlationId);
         }
 
@@ -128,9 +168,16 @@ namespace Std.Out
             return response;
         }
 
+        public async Task<Response<Either<string, NotFound>>> Load(string action)
+        {
+            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options.Value?.Key, action);
+            return await Load(config, key);
+        }
+
         public async Task<Response<Either<string, NotFound>>> Load(StorageKey key)
         {
-            var config = GetConfig(_options.Value);
+            var config = GetConfig(_options.Value?.Sources);
             return await Load(config, key);
         }
 

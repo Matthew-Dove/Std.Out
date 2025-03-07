@@ -5,8 +5,19 @@ namespace Std.Out.Models
     /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
     public sealed class StdConfigOptions
     {
+        /// <summary>Conventional name to find the config settings for stdout.</summary>
         public const string SECTION_NAME = "StdOut";
 
+        /// <summary>Persistant data storeage options.</summary>
+        public StdSourceOptions Sources { get; set; }
+
+        /// <summary>Creates a deterministic key from the merged parameters, in order to query the lastest correlation Id.</summary>
+        public StorageKeyOptions Key { get; set; }
+    }
+
+    /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
+    public sealed class StdSourceOptions
+    {
         /// <summary>Storage configuration for local disk.<summary>
         public DiskStdConfig Disk { get; set; }
 

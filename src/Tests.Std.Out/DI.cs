@@ -39,11 +39,12 @@ namespace Tests.Std.Out
                 context.Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
 
                 services
-                .AddStdOutServices(opt => {
-                    opt.Disk = options.Disk;
-                    opt.S3 = options.S3;
-                    opt.DynamoDb = options.DynamoDb;
-                });
+                .AddStdOutServices(
+                    opt => {
+                        opt.Sources = options.Sources;
+                        opt.Key = options.Key;
+                    }
+                );
             })
             .Build().Services.AddStdOutLogging();
         }
