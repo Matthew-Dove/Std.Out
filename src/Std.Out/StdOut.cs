@@ -7,7 +7,7 @@ using Std.Out.Models;
 
 namespace Std.Out
 {
-    /// <summary>The Standard Output service allows you to store the last used correlation Id for a particular key.</summary>
+    /// <summary>The Standard Output service allows you to store, load, and query the last used correlation Id for a particular key; and given source(s).</summary>
     public interface IStdOut
     {
         /// <summary>Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.</summary>
@@ -18,7 +18,7 @@ namespace Std.Out
         Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId);
 
         /// <summary>Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.</summary>
-        /// <param name="config"></param>
+        /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
         /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
         /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
         Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key);

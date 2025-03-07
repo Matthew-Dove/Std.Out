@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Std.Out;
 using Std.Out.Models;
-using System.IO;
 using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out
@@ -34,7 +33,7 @@ namespace Tests.Std.Out
                 TimeToLiveHours = db.TimeToLiveHours
             };
 
-            _config = new StdConfig(/*stdDisk, stdS3, */stdDb);
+            _config = new StdConfig(stdDisk, stdS3, stdDb);
             _key = StorageKey.CreateWithEnvironment(key.Application, key.Environment, (key.Namespace, key.Offset.GetValueOrDefault(0)));
             _cid = Guid.NewGuid().ToString();
         }
