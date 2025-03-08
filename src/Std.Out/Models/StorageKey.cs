@@ -113,6 +113,27 @@ namespace Std.Out.Models
             );
         }
 
+        private StorageKey(NotNull<StdApplication> application, StdEnvironment environment, StdUser user, NotNull<StdAction> action)
+        {
+            Application = application;
+            Environment = environment;
+            User = user;
+            Action = new Either<StdAction, StdNamespaceAction, StdNoAction>(action);
+        }
+
+        internal StorageKey WithAction(string action) => new StorageKey(Application, Environment, User, new StdAction(CleanAction(action)));
+
+        private static string CleanAction(string action)
+        {
+            if (action != null)
+            {
+                if (action.StartsWith('/')) action = action[1..];
+                if (action.EndsWith("/correlation.json")) action = action[..^"/correlation.json".Length];
+                else if (action.EndsWith('/')) action = action[..^1];
+            }
+            return action;
+        }
+
         /// <summary>
         /// Returns the key in the format: {application}/{environment}/{user}/{action}/correlation.json (assuming each parameter is set).
         /// <para>When no action is set, then only the key section is returned: {application}/{environment}/{user}.</para>
@@ -125,6 +146,12 @@ namespace Std.Out.Models
             string action = Action.Match(x => x.Value, y => Util.GetCaller(y.Value.Namespace, y.Value.Offset), z => string.Empty);
             return string.Empty.Equals(action) ? key : $"{key}/{action}/correlation.json";
         }
+
+        public override int GetHashCode() => ToString().GetHashCode();
+
+        public override bool Equals(object obj) => obj is StorageKey key && Equals(key);
+
+        public bool Equals(StorageKey other) => other is not null && other.ToString().Equals(ToString());
 
         /// <summary>
         /// Returns just the action's subsection, or the full key path.

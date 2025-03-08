@@ -9,6 +9,7 @@ namespace Std.Out.Core.Services
     {
         Task<Response<Unit>> Store(string path, CorrelationDto dto);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path);
+        Task<Response<string[]>> Query(string path);
     }
 
     public sealed class DiskStorage(
@@ -62,12 +63,38 @@ namespace Std.Out.Core.Services
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    _log.LogError(e, "An error occurred loading the correlation Id to Disk ({Path}): {Message}", path, e.Message);
+                    _log.LogError(e, "An error occurred loading the correlation Id from Disk ({Path}): {Message}", path, e.Message);
                 }
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "An error occurred loading the correlation Id to Disk ({Path}): {Message}", path, ex.Message);
+                _log.LogError(ex, "An error occurred loading the correlation Id from Disk ({Path}): {Message}", path, ex.Message);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<string[]>> Query(string path)
+        {
+            var response = new Response<string[]>();
+
+            try
+            {
+                var root = path + "/";
+                var files = Directory.GetFiles(root, "correlation.json", SearchOption.AllDirectories);
+                var actions = files.Select(x => x.Replace('\\', '/')[root.Length..][..^"/correlation.json".Length]).ToArray();
+                response = response.With(actions);
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    _log.LogError(e, "An error occurred querying the key from Disk ({Path}): {Message}", path, e.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred querying the key from Disk ({Path}): {Message}", path, ex.Message);
             }
 
             return response;

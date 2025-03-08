@@ -43,5 +43,14 @@ namespace Tests.Std.Out
             Assert.True(isCid);
             Assert.False(string.IsNullOrEmpty(cid));
         }
+
+        [Fact]
+        public async Task Query()
+        {
+            var result = await _std.Query();
+
+            Assert.True(result.IsValid);
+            Assert.True(result.Value.Any());
+        }
     }
 }

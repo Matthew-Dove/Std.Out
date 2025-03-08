@@ -12,6 +12,7 @@ namespace Std.Out.Core.Services
     {
         Task<Response<string[]>> Query(DynamodbSourceModel source, string pk, string sk);
         Task<Response<string[]>> QueryIndex(DynamodbSourceModel source);
+        Task<Response<string[]>> QuerySk(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName);
         Task<Response<Unit>> Put(string tableName, Dictionary<string, string> attributes, string ttlName, long ttl);
         Task<Response<Either<string, NotFound>>> Get(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName, string sortKeyValue);
     }
@@ -120,6 +121,48 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 ex.LogError("Error querying {Index} for table: {Table}, with ix_pk: {IxPk}, ix_sk: {IxSk}.".WithArgs(source.IndexName, source.TableName, source.IndexPartitionKeyMask, source.IndexSortKeyMask));
+            }
+
+            return response;
+        }
+
+        public async Task<Response<string[]>> QuerySk(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName)
+        {
+            var response = new Response<string[]>();
+
+            var queryRequest = new QueryRequest
+            {
+                TableName = tableName,
+                KeyConditionExpression = "#pk = :pk",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    { "#pk", partitionKeyName }
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":pk", new AttributeValue { S = partitionKeyValue } }
+                },
+                ProjectionExpression = sortKeyName,
+                Limit = CoreConstants.MaxLimit
+            };
+
+            try
+            {
+                var queryResponse = await _client.QueryAsync(queryRequest);
+
+                if (queryResponse.HttpStatusCode == HttpStatusCode.OK)
+                {
+                    var result = queryResponse.Items.Select(x => x[sortKeyName].S).ToArray();
+                    response = response.With(result);
+                }
+                else
+                {
+                    queryResponse.LogErrorValue(x => "Querying failed with HTTP code: {HttpCode}, on table: {Table}, with pk: {Pk}.".WithArgs(x.HttpStatusCode, tableName, partitionKeyValue));
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.LogError("Error querying table: {Table}, with pk: {Pk}.".WithArgs(tableName, partitionKeyValue));
             }
 
             return response;

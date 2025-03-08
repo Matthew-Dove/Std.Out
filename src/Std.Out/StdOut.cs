@@ -57,7 +57,11 @@ namespace Std.Out
         /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
         Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key);
 
-        //Task<Response<StorageKey[]>> Query(StdConfig config, StdApplication Application, StdEnvironment Environment = null, StdUser User = null);
+        Task<Response<StorageKey[]>> Query();
+
+        Task<Response<StorageKey[]>> Query(StorageKey key);
+
+        Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key);
     }
 
     public sealed class StdOut(
@@ -66,6 +70,7 @@ namespace Std.Out
     {
         private static readonly Task<Response<Unit>> _store = Task.FromResult(Unit.ResponseSuccess);
         private static readonly Task<Response<Either<CorrelationDto, NotFound>>> _load = Task.FromResult(Response.Create(new Either<CorrelationDto, NotFound>(new NotFound())));
+        private static readonly Task<Response<string[]>> _query = Task.FromResult(Response.Create(Array.Empty<string>()));
 
         private static StdConfig GetConfig(StdSourceOptions options)
         {
@@ -85,7 +90,7 @@ namespace Std.Out
             return config;
         }
 
-        private static StorageKey GetKey(StorageKeyOptions options, string actionOverride = null)
+        private static StorageKey GetKey(StorageKeyOptions options, string actionOverride = null, bool dropAction = false)
         {
             StorageKey key = null;
             var app = options?.Application;
@@ -98,6 +103,12 @@ namespace Std.Out
 
             if (!string.IsNullOrEmpty(env)) key = StorageKey.CreateWithEnvironment(app, env, action);
             else key = StorageKey.Create(app, action);
+
+            if (dropAction)
+            {
+                if (!string.IsNullOrEmpty(env)) key = StorageKey.CreateWithEnvironment(app, env);
+                else key = StorageKey.Create(app);
+            }
 
             return key;
         }
@@ -120,7 +131,7 @@ namespace Std.Out
             var response = new Response<Unit>();
             if (config == null || key == null || !key.HasAction || string.IsNullOrWhiteSpace(correlationId))
             {
-                _log.LogError("Invalid parameters, stdout service input values cannot be null, or empty.");
+                _log.LogError("Invalid input store parameters for the stdout service.");
                 return response;
             }
 
@@ -186,7 +197,7 @@ namespace Std.Out
             var response = new Response<Either<string, NotFound>>();
             if (config == null || key == null || !key.HasAction)
             {
-                _log.LogError("Invalid parameters, stdout service input values cannot be null, or empty.");
+                _log.LogError("Invalid input load parameters for the stdout service.");
                 return response;
             }
 
@@ -239,6 +250,75 @@ namespace Std.Out
             catch (Exception ex)
             {
                 _log.LogError(ex, "An error occurred loading the correlation Id. {Message}", ex.Message);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<StorageKey[]>> Query()
+        {
+            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options.Value?.Key, dropAction: true);
+            return await Query(config, key);
+        }
+
+        public async Task<Response<StorageKey[]>> Query(StorageKey key)
+        {
+            var config = GetConfig(_options.Value?.Sources);
+            return await Query(config, key);
+        }
+
+        public async Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key)
+        {
+            var response = new Response<StorageKey[]>();
+            if (config == null || key == null || key.HasAction || (config.DynamoDb != null && config.DynamoDb.SortKeyName == string.Empty))
+            {
+                _log.LogError("Invalid input query parameters for the stdout service.");
+                return response;
+            }
+
+            try
+            {
+                Task<Response<string[]>> disk = _query, s3 = _query, db = _query;
+                var path = key.ToString();
+
+                if (config.Disk != null)
+                {
+                    var fullPath = Path.Combine(config.Disk.RootPath, path).Replace('\\', '/');
+                    disk = _disk.Query(fullPath);
+                }
+                if (config.S3 != null)
+                {
+                    var fullPath = Path.Combine(config.S3.Prefix, path).Replace('\\', '/');
+                    if (fullPath.StartsWith('/')) fullPath = fullPath.Substring(1);
+                    s3 = _s3.Query(fullPath, config.S3.Bucket);
+                }
+                if (config.DynamoDb != null)
+                {
+                    db = _db.Query(path, config.DynamoDb.TableName, config.DynamoDb.PartitionKeyName, config.DynamoDb.SortKeyName);
+                }
+
+                response = await Expression.FunnelAsync(disk, s3, db, (x, y, z) =>
+                {
+                    var keys = new List<StorageKey>(x.Length + y.Length + z.Length);
+
+                    keys.AddRange(x.Select(xyz => key.WithAction(xyz)));
+                    keys.AddRange(y.Select(xyz => key.WithAction(xyz)));
+                    keys.AddRange(z.Select(xyz => key.WithAction(xyz)));
+
+                    return keys.Distinct().ToArray();
+                });
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    _log.LogError(e, "An error occurred querying for keys: {Message}", e.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred querying for keys: {Message}", ex.Message);
             }
 
             return response;

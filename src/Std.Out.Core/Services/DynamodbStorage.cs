@@ -10,6 +10,7 @@ namespace Std.Out.Core.Services
     {
         Task<Response<Unit>> Store(string path, string actionPath, CorrelationDto dto, string table, string partitionKeyName, string sortKeyName, string timeToLiveName, int timeToLiveHours);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string actionPath, string table, string partitionKeyName, string sortKeyName);
+        Task<Response<string[]>> Query(string path, string table, string partitionKeyName, string sortKeyName);
     }
 
     public sealed class DynamodbStorage(
@@ -103,6 +104,29 @@ namespace Std.Out.Core.Services
             catch (Exception ex)
             {
                 _log.LogError(ex, "An error occurred loading the correlation Id from DynamoDB [{Table}] ({Path}): {Message}", table, path, ex.Message);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<string[]>> Query(string path, string table, string partitionKeyName, string sortKeyName)
+        {
+            var response = new Response<string[]>();
+
+            try
+            {
+                response = await _db.QuerySk(table, partitionKeyName, path, sortKeyName);
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    _log.LogError(e, "An error occurred querying the key from DynamoDB [{Table}] ({Path}): {Message}", table, path, e.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred querying the key from DynamoDB [{Table}] ({Path}): {Message}", table, path, ex.Message);
             }
 
             return response;
