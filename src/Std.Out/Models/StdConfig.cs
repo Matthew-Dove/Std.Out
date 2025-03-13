@@ -1,4 +1,5 @@
 ﻿using ContainerExpressions.Containers;
+using System.Drawing;
 
 namespace Std.Out.Models
 {
@@ -18,26 +19,26 @@ namespace Std.Out.Models
     /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
     public sealed class StdSourceOptions
     {
-        /// <summary>Storage configuration for local disk.<summary>
+        /// <summary>Storage configuration for local disk.</summary>
         public DiskStdConfig Disk { get; set; }
 
-        /// <summary>Storage configuration for AWS S3.<summary>
+        /// <summary>Storage configuration for AWS S3.</summary>
         public S3StdConfig S3 { get; set; }
 
-        /// <summary>Storage configuration for AWS DynamoDB.<summary>
+        /// <summary>Storage configuration for AWS DynamoDB.</summary>
         public DynamoDbStdConfig DynamoDb { get; set; }
     }
 
     /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
     public sealed class StdConfig
     {
-        /// <summary>Storage configuration for local disk.<summary>
+        /// <summary>Storage configuration for local disk.</summary>
         public DiskStdConfig Disk { get; }
 
-        /// <summary>Storage configuration for AWS S3.<summary>
+        /// <summary>Storage configuration for AWS S3.</summary>
         public S3StdConfig S3 { get; }
 
-        /// <summary>Storage configuration for AWS DynamoDB.<summary>
+        /// <summary>Storage configuration for AWS DynamoDB.</summary>
         public DynamoDbStdConfig DynamoDb { get; }
 
         public StdConfig(NotNull<DiskStdConfig> disk) { Disk = disk.ThrowIf(DiskStdConfig.IsNotValid); }
@@ -49,17 +50,23 @@ namespace Std.Out.Models
         public StdConfig(NotNull<DynamoDbStdConfig> dynamoDb) { DynamoDb = dynamoDb.ThrowIf(DynamoDbStdConfig.IsNotValid); }
     }
 
-    /// <summary>Storage configuration for local disk.<summary>
+    /// <summary>Api operations available though the stdout nuget package.</summary>
+    [Flags] public enum Operations { None = 0, Store = 1, Load = 2, Query = 4 }
+
+    /// <summary>Storage configuration for local disk.</summary>
     public sealed class DiskStdConfig
     {
         /// <summary>The local disk root path, where the key is used to store the correlation Id.</summary>
         public string RootPath { get; set; }
 
+        /// <summary>Any dissections marked here will not be used when attempting the store, load, or query operations.</summary>
+        public Operations OperationDissect { get; set; }
+
         internal static bool IsNotValid(NotNull<DiskStdConfig> disk) => !IsValid(disk.Value);
         internal static bool IsValid(DiskStdConfig disk) => !string.IsNullOrWhiteSpace(disk.RootPath);
     }
 
-    /// <summary>Storage configuration for AWS S3.<summary>
+    /// <summary>Storage configuration for AWS S3.</summary>
     public sealed class S3StdConfig
     {
         /// <summary>The name of the bucket in S3, where the key is used to store the correlation Id.</summary>
@@ -69,11 +76,17 @@ namespace Std.Out.Models
         public string Prefix { get => _prefix; set { _prefix = string.IsNullOrWhiteSpace(value) ? string.Empty : value; } }
         private string _prefix;
 
+        /// <summary>When true, removes all existing object versions after uploading a new one.</summary>
+        public bool PurgeObjectVersions { get; set; }
+
+        /// <summary>Any dissections marked here will not be used when attempting the store, load, or query operations.</summary>
+        public Operations OperationDissect { get; set; }
+
         internal static bool IsNotValid(NotNull<S3StdConfig> s3) => !IsValid(s3.Value);
         internal static bool IsValid(S3StdConfig s3) => !string.IsNullOrWhiteSpace(s3.Bucket);
     }
 
-    /// <summary>Storage configuration for AWS DynamoDB.<summary>
+    /// <summary>Storage configuration for AWS DynamoDB.</summary>
     public sealed class DynamoDbStdConfig
     {
         /// <summary>The name of the table in DynamoDB, where the key is used to store the correlation Id.</summary>
@@ -91,6 +104,9 @@ namespace Std.Out.Models
 
         /// <summary>The minimum time (in hours) this item should be kept for, this is optional.</summary>
         public int? TimeToLiveHours { get; set; }
+
+        /// <summary>Any dissections marked here will not be used when attempting the store, load, or query operations.</summary>
+        public Operations OperationDissect { get; set; }
 
         internal static bool IsNotValid(NotNull<DynamoDbStdConfig> db) => !IsValid(db.Value);
         internal static bool IsValid(DynamoDbStdConfig db) =>

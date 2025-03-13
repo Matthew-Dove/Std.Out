@@ -15,7 +15,7 @@ namespace Std.Out.Core.Services
         Task<Response<string[]>> List(S3SourceModel source);
         Task<Response<string>> Download(S3SourceModel source, string key);
         Task<Response<Either<string, NotFound>>> Download(string bucket, string key);
-        Task<Response<Unit>> Upload(string bucket, string key, string content);
+        Task<Response<Unit>> Upload(string bucket, string key, string content, bool purgeObjectVersions);
     }
 
     public sealed class S3Service : IS3Service
@@ -116,7 +116,7 @@ namespace Std.Out.Core.Services
             return response;
         }
 
-        public async Task<Response<Unit>> Upload(string bucket, string key, string content)
+        public async Task<Response<Unit>> Upload(string bucket, string key, string content, bool purgeObjectVersions)
         {
             var response = new Response<Unit>();
 
@@ -134,7 +134,8 @@ namespace Std.Out.Core.Services
                 var result = await _client.PutObjectAsync(put);
                 if (result.HttpStatusCode == HttpStatusCode.OK)
                 {
-                    response = await CleanUpOldVersions(bucket, key);
+                    response = response.With(Unit.Instance);
+                    if (purgeObjectVersions) response = await CleanUpOldVersions(bucket, key);
                 }
                 else
                 {

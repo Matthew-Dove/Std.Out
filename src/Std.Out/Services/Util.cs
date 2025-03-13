@@ -6,6 +6,50 @@ namespace Std.Out.Services
 {
     internal static class Util
     {
+        private static string _ns = string.Empty;
+        private static readonly string[] _excludedNamespaces = [
+            "Std.Out",
+            "System.",
+            "Microsoft.",
+            "MS.",
+            "Castle.",
+            "DynamicProxyGenAssembly",
+            "<"
+        ];
+
+        public static string GetCallerNamespace()
+        {
+            static string FindNamespace()
+            {
+                var stackTrace = new StackTrace();
+
+                for (int i = 0; i < stackTrace.FrameCount; i++)
+                {
+                    var frame = stackTrace.GetFrame(i);
+                    var method = frame.GetMethod();
+                    var declaringType = method.DeclaringType;
+                    var ns = declaringType?.Namespace;
+
+                    if (
+                        ns != null &&
+                        !_excludedNamespaces.Any(ns.StartsWith) &&
+                        !method.Name.Contains('<') &&
+                        !declaringType.Name.Contains('<') &&
+                        declaringType.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Length == 0
+                        )
+                    {
+                        _ns = ns;
+                        return ns;
+                    }
+                }
+
+                return string.Empty;
+            }
+
+            var caller = string.IsNullOrEmpty(_ns) ? FindNamespace() : _ns;
+            return caller.ThrowIfNullOrEmpty("Unable to determine the calling method's namespace.");
+        }
+
         public static string GetCaller(string @namespace, int offset)
         {
             var caller = string.Empty;

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Std.Out.Core.Models;
 using Std.Out.Core.Services;
 using Std.Out.Models;
+using Std.Out.Services;
 
 namespace Std.Out
 {
@@ -57,10 +58,25 @@ namespace Std.Out
         /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
         Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key);
 
+        /// <summary>
+        /// Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument, and key arguments).</para>
+        /// </summary>
+        /// <returns>0 to many keys, that can be used in the Load() method, to gather the related correlation Ids.</returns>
         Task<Response<StorageKey[]>> Query();
 
+        /// <summary>
+        /// Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.
+        /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument).</para>
+        /// </summary>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application.</param>
+        /// <returns>0 to many keys, that can be used in the Load() method, to gather the related correlation Ids.</returns>
         Task<Response<StorageKey[]>> Query(StorageKey key);
 
+        /// <summary>Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.</summary>
+        /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application.</param>
+        /// <returns>0 to many keys, that can be used in the Load() method, to gather the related correlation Ids.</returns>
         Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key);
     }
 
@@ -90,13 +106,15 @@ namespace Std.Out
             return config;
         }
 
-        private static StorageKey GetKey(StorageKeyOptions options, string actionOverride = null, bool dropAction = false)
+        private static StorageKey GetKey(StorageKeyOptions options, string namespaceOverride = null, string actionOverride = null, bool dropAction = false)
         {
             StorageKey key = null;
             var app = options?.Application;
             var env = options?.Environment;
             var @namespace = options?.Namespace;
             var offset = options?.Offset ?? 0;
+
+            if (string.IsNullOrEmpty(@namespace)) @namespace = namespaceOverride;
 
             var action = new Either<string, (string Namespace, int Offset)>((@namespace, offset));
             if (actionOverride != null) action = actionOverride;
@@ -115,8 +133,9 @@ namespace Std.Out
 
         public async Task<Response<Unit>> Store(string correlationId)
         {
+            var @namespace = Util.GetCallerNamespace();
             var config = GetConfig(_options.Value?.Sources);
-            var key = GetKey(_options.Value?.Key);
+            var key = GetKey(_options.Value?.Key, namespaceOverride: @namespace);
             return await Store(config, key, correlationId);
         }
 
@@ -141,18 +160,18 @@ namespace Std.Out
                 var path = key.ToString();
                 var dto = new CorrelationDto(correlationId);
 
-                if (config.Disk != null)
+                if (config.Disk != null && !config.Disk.OperationDissect.HasFlag(Operations.Store))
                 {
                     var fullPath = Path.Combine(config.Disk.RootPath, path).Replace('\\', '/');
                     disk = _disk.Store(fullPath, dto);
                 }
-                if (config.S3 != null)
+                if (config.S3 != null && !config.S3.OperationDissect.HasFlag(Operations.Store))
                 {
                     var fullPath = Path.Combine(config.S3.Prefix, path).Replace('\\', '/');
                     if (fullPath.StartsWith('/')) fullPath = fullPath.Substring(1);
-                    s3 = _s3.Store(fullPath, dto, config.S3.Bucket);
+                    s3 = _s3.Store(fullPath, dto, config.S3.Bucket, config.S3.PurgeObjectVersions);
                 }
-                if (config.DynamoDb != null)
+                if (config.DynamoDb != null && !config.DynamoDb.OperationDissect.HasFlag(Operations.Store))
                 {
                     string fullPath = path, actionPath = key.ToString(getActionPath: true);
                     db = _db.Store(
@@ -182,7 +201,7 @@ namespace Std.Out
         public async Task<Response<Either<string, NotFound>>> Load(string action)
         {
             var config = GetConfig(_options.Value?.Sources);
-            var key = GetKey(_options.Value?.Key, action);
+            var key = GetKey(_options.Value?.Key, actionOverride: action);
             return await Load(config, key);
         }
 
@@ -206,18 +225,18 @@ namespace Std.Out
                 Task<Response<Either<CorrelationDto, NotFound>>> disk = _load, s3 = _load, db = _load;
                 var path = key.ToString();
 
-                if (config.Disk != null)
+                if (config.Disk != null && !config.Disk.OperationDissect.HasFlag(Operations.Load))
                 {
                     var fullPath = Path.Combine(config.Disk.RootPath, path).Replace('\\', '/');
                     disk = _disk.Load(fullPath);
                 }
-                if (config.S3 != null)
+                if (config.S3 != null && !config.S3.OperationDissect.HasFlag(Operations.Load))
                 {
                     var fullPath = Path.Combine(config.S3.Prefix, path).Replace('\\', '/');
                     if (fullPath.StartsWith('/')) fullPath = fullPath.Substring(1);
                     s3 = _s3.Load(fullPath, config.S3.Bucket);
                 }
-                if (config.DynamoDb != null)
+                if (config.DynamoDb != null && !config.DynamoDb.OperationDissect.HasFlag(Operations.Load))
                 {
                     string fullPath = path, actionPath = key.ToString(getActionPath: true);
                     db = _db.Load(
@@ -282,18 +301,18 @@ namespace Std.Out
                 Task<Response<string[]>> disk = _query, s3 = _query, db = _query;
                 var path = key.ToString();
 
-                if (config.Disk != null)
+                if (config.Disk != null && !config.Disk.OperationDissect.HasFlag(Operations.Query))
                 {
                     var fullPath = Path.Combine(config.Disk.RootPath, path).Replace('\\', '/');
                     disk = _disk.Query(fullPath);
                 }
-                if (config.S3 != null)
+                if (config.S3 != null && !config.S3.OperationDissect.HasFlag(Operations.Query))
                 {
                     var fullPath = Path.Combine(config.S3.Prefix, path).Replace('\\', '/');
                     if (fullPath.StartsWith('/')) fullPath = fullPath.Substring(1);
                     s3 = _s3.Query(fullPath, config.S3.Bucket);
                 }
-                if (config.DynamoDb != null)
+                if (config.DynamoDb != null && !config.DynamoDb.OperationDissect.HasFlag(Operations.Query))
                 {
                     db = _db.Query(path, config.DynamoDb.TableName, config.DynamoDb.PartitionKeyName, config.DynamoDb.SortKeyName);
                 }

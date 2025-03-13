@@ -74,7 +74,7 @@ namespace Std.Out.Core.Services
             return response;
         }
 
-        public async Task<Response<string[]>> Query(string path)
+        public Task<Response<string[]>> Query(string path)
         {
             var response = new Response<string[]>();
 
@@ -85,19 +85,12 @@ namespace Std.Out.Core.Services
                 var actions = files.Select(x => x.Replace('\\', '/')[root.Length..][..^"/correlation.json".Length]).ToArray();
                 response = response.With(actions);
             }
-            catch (AggregateException ae)
-            {
-                foreach (var e in ae.InnerExceptions)
-                {
-                    _log.LogError(e, "An error occurred querying the key from Disk ({Path}): {Message}", path, e.Message);
-                }
-            }
             catch (Exception ex)
             {
                 _log.LogError(ex, "An error occurred querying the key from Disk ({Path}): {Message}", path, ex.Message);
             }
 
-            return response;
+            return Task.FromResult(response);
         }
     }
 }

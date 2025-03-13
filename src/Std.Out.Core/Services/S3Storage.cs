@@ -8,7 +8,7 @@ namespace Std.Out.Core.Services
 {
     public interface IS3Storage
     {
-        Task<Response<Unit>> Store(string path, CorrelationDto dto, string bucket);
+        Task<Response<Unit>> Store(string path, CorrelationDto dto, string bucket, bool purgeObjectVersions);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string bucket);
         Task<Response<string[]>> Query(string path, string bucket);
     }
@@ -19,14 +19,14 @@ namespace Std.Out.Core.Services
     {
         private static readonly string[] _files = ["correlation.json"];
 
-        public async Task<Response<Unit>> Store(string path, CorrelationDto dto, string bucket)
+        public async Task<Response<Unit>> Store(string path, CorrelationDto dto, string bucket, bool purgeObjectVersions)
         {
             var response = new Response<Unit>();
 
             try
             {
                 var json = JsonSerializer.Serialize(dto, CoreConstants.JsonOptions);
-                response = await _s3.Upload(bucket, path, json);
+                response = await _s3.Upload(bucket, path, json, purgeObjectVersions);
             }
             catch (AggregateException ae)
             {

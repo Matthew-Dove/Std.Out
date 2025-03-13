@@ -26,9 +26,9 @@ namespace Tests.Std.Out
         [Fact]
         public async Task Store()
         {
-            var result = await _std.Store(_key, _cid);
+            var store = await _std.Store(_key, _cid);
 
-            Assert.True(result.IsValid);
+            Assert.True(store.IsValid);
         }
 
         [Fact]
@@ -37,8 +37,8 @@ namespace Tests.Std.Out
             var action = $"{typeof(StdOutTests).Namespace}.{nameof(StdOutTests)}.{nameof(Store)}";
             var key = StorageKey.CreateWithEnvironment(_key.Application, _key.Environment, action);
 
-            var result = await _std.Load(key);
-            var isCid = result.Value.TryGetT1(out var cid);
+            var load = await _std.Load(key);
+            var isCid = load.Value.TryGetT1(out var cid);
 
             Assert.True(isCid);
             Assert.False(string.IsNullOrEmpty(cid));
@@ -47,10 +47,10 @@ namespace Tests.Std.Out
         [Fact]
         public async Task Query()
         {
-            var result = await _std.Query();
+            var query = await _std.Query();
 
-            Assert.True(result.IsValid);
-            Assert.True(result.Value.Any());
+            Assert.True(query.IsValid);
+            Assert.True(query.Value.Any());
         }
     }
 }

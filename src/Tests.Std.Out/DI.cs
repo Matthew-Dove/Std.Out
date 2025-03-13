@@ -20,8 +20,8 @@ namespace Tests.Std.Out
             {
                 config
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile(Path.GetFullPath("../../../appsettings.debug.json"), optional: true);
+                .AddJsonFile("appsettings.json");
+                //.AddJsonFile(Path.GetFullPath("../../../appsettings.debug.json"), optional: true);
             })
             .ConfigureLogging((context, logging) =>
             {
