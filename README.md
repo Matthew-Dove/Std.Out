@@ -351,3 +351,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 ## 1.0.0
 
 * Released a Nuget package with `Store()`, `Load()`, and `Query()` apis for saving, and retrieving correlation Ids; against  a program's name, and action.
+
+## 1.0.1
+
+* Added debug symbols package.

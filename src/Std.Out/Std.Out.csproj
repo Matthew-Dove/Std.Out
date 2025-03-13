@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Standard Output</Title>
     <PackageId>md.stdout</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Matthew Dove</Authors>
     <Description>Captures output of a program to assist with debugging.
 This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
@@ -21,11 +21,11 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>A package to store a request's correlation Id, for future retrieval, and debugging.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added debug symbols package.</PackageReleaseNotes>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>symbols.nupkg</SymbolPackageFormat>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
