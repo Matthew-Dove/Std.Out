@@ -3,9 +3,19 @@
 Captures the output of services to assist with debugging.  
 This project is tailored towards AWS, and is not suitable for general purpose diagnostics.  
 
+**Stdout** pulls data from various sources for display:
+* **CloudWatch:** Gathers related messages across log streams, and groups.
+* **S3:** Download assets files.
+* **DynamoDB:** Load items.
+
 ![Console Standard Out Visualization](assets/ConsoleStandardOut.webp)  
 
 # Nuget
+
+[Package](https://www.nuget.org/packages/md.stdout)
+```console
+dotnet add package md.stdout
+```
 
 [.NET CLI](https://www.nuget.org/packages/md.stdout.cli)
 ```console
@@ -17,14 +27,7 @@ dotnet tool install --global md.stdout.cli
 stdout verb [options] [flags]
 ```
 
-# Tracing
-
-Pulls data from various sources, and displays them:
-* **CloudWatch:** Gathers related messages across log streams, and groups.
-* **S3:** Download assets files.
-* **DynamoDB:** Load items.
-
-# CLI
+# .NET CLI
 
 **Flags**
 ```console
@@ -189,11 +192,138 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 * `IndexSortKeyMask:` The format of the index's sk, the correlation id from the command line is merged with `<CID>` (_optional_).
 * `Projection:` The item(*s*) attribute(*s*) to select (_optional: returns all attributes_).
 
+# Nuget Package
+
+Where as the .NET CLI: `md.stdout.cli`, is used to read logs, tables, and text assets given a correlation Id.  
+This package: `md.stdout`, is used to store correlation Ids, for a given service, environment, user, and action; to retrieve later on.  
+
+The main purpose is to help **find** the correlation Id after *some* action happens, on *some* environment, in *some* program, by *some* user.  
+For this combination (*known as a StorageKey*), only the latest correlation Id is kept; any existing correlation Id for said key is overwritten.  
+
+**Store**
+```cs
+/// <summary>Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.</summary>
+/// <param name="config">Settings for data storage services, in order to persist the last used correlation Id.</param>
+/// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+/// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
+/// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
+Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId);
+```
+
+**Load**
+```cs
+/// <summary>Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.</summary>
+/// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
+/// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+/// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
+Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key);
+```
+
+**Query**
+```cs
+/// <summary>Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.</summary>
+/// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
+/// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application.</param>
+/// <returns>0 to many keys, that can be used in the Load() method, to gather the related correlation Ids.</returns>
+Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key);
+```
+
+# AppSettings
+
+Since `md.stdout` is a package in *your* program, you're free to add the settings however you prefer; below is just one option.  
+The package won't read directly from any configuration source.  
+You can either pass the config model directly as an overload option on the `IStdOut` methods, or use the dependency injection extension method (*below*):
+```cs
+// Load both: "Sources", and "Key" using the configuration builder:
+var options = new StdConfigOptions();
+Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
+
+// Provide the config values to StdOut:
+services
+.AddStdOutServices(
+    opt => {
+        opt.Sources = options.Sources;
+        opt.Key = options.Key;
+    }
+);
+
+// Alternatively skip the config step, but still call StdOut for service injection:
+services.AddStdOutServices();
+```
+
+```json
+{
+  "StdOut": {
+    "Sources": {
+      "Disk": {
+        "RootPath": "C:/temp/stdout/",
+        "OperationDissect": "none"
+      },
+      "S3": {
+        "Bucket": "bucketName",
+        "Prefix": "assets/stdout/",
+        "PurgeObjectVersions": false,
+        "OperationDissect": "store,load,query"
+      },
+      "DynamoDb": {
+        "TableName": "dbCustomers",
+        "PartitionKeyName": "pk",
+        "SortKeyName": "sk",
+        "TimeToLiveName": "",
+        "TimeToLiveHours": null,
+        "OperationDissect": "store,load,query"
+      }
+    },
+    "Key": {
+      "Application": "customerService",
+      "Environment": "dev",
+      "Namespace": "",
+      "Offset": null
+    }
+  }
+}
+```
+
+Only one **source** is required for `stdout` to store, load, and query correlation Ids.  
+Both **S3**, and **DynamoDb** sources have the option to delete old entries (*i.e. PurgeObjectVersions, and TTL*).  
+
+Each **source** has an `OperationDissect` property.  
+By default when a source has been configured, it will be used for each api operation (i.e. store, load, and query).  
+If you only want a particular source to say: read, and query, but **not** to store; then you'd add "*store*" to the source's dissect property, as you are "removing it".  
+
+## Disk
+
+* `RootPath:` The local disk root path, where the key is used to store the correlation Id (_required_).
+* `OperationDissect:` Any dissections marked here will **not** be used when attempting the store, load, or query operations (_optional: none_).
+
+## S3
+
+* `Bucket:` he name of the bucket in S3, where the key is used to store the correlation Id (_required_).
+* `Prefix:` A prefix to prepend to the **Storage Key** (_optional: empty_).
+* `PurgeObjectVersions:` When true, removes all existing object versions after uploading a new one (_optional: false_).
+* `OperationDissect:` Any dissections marked here will **not** be used when attempting the store, load, or query operations (_optional: none_).
+
+## DynamoDb
+
+* `TableName:` The name of the DynamoDB table (_required_).
+* `PartitionKeyName:` The name of the Partition Key in the DynamoDB table (_where the key is stored_) (_required_).
+* `SortKeyName:` The name of the Sort Key in the DynamoDB table (_where the key's action is split out, and stored_) (_optional: depending on the table setup_).
+* `TimeToLiveName:` The name of TTL attribute for the table (_optional_).
+* `TimeToLiveHours:` The _minimum_ time this item should be kept for (_optional_).
+* `OperationDissect:` Any dissections marked here will **not** be used when attempting the store, load, or query operations (_optional: none_).
+
+## Key
+
+* `Application:` A name to represent the program / service storing the correlation Id (_i.e. customer_service_) (_required_).
+* `Environment:` The _stage_ the request is running in (_optional_).
+* `Namespace:` Pulls the action from the top level calling method defined in said namespace (_optional: must provide action in Storage Key parameter instead_).
+* `Offset:` Offset may be used to go "down" a function call, when using the namespace (_i.e. to skip middleware etc_) (_optional: must provide action in Storage Key parameter instead_).
+
 # Credits
 * [Icon](https://www.flaticon.com/free-icon/bird_2630452) made by [Vitaly Gorbachev](https://www.flaticon.com/authors/vitaly-gorbachev) from [Flaticon](https://www.flaticon.com/)
 * [Standard Out Visualization](https://chatgpt.com/) generated from chatgpt (*DALL.E / OpenAI*).
 
-# Changelog
+# CLI Changelog
 
 ## 1.0.0
 
@@ -215,3 +345,9 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 
 * Some breaking changes to the app settings - allowed the browser, or console display options for every target type (_instead of just S3_).
 * Added support for DynamoDB items, loading by keys directly, and correlation Id via an index.
+
+# Package Changelog
+
+## 1.0.0
+
+* Released a Nuget package with `Store()`, `Load()`, and `Query()` apis for saving, and retrieving correlation Ids; against  a program's name, and action.
