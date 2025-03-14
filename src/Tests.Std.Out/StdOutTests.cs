@@ -1,7 +1,7 @@
 using ContainerExpressions.Containers;
 using Microsoft.Extensions.Options;
-using Std.Out;
-using Std.Out.Models;
+using Std.Out.Core.Models;
+using Std.Out.Core.Services;
 using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out
@@ -26,7 +26,7 @@ namespace Tests.Std.Out
         [Fact]
         public async Task Store()
         {
-            var store = await _std.Store(_key, _cid);
+            var store = await _std.Store(_cid, _key);
 
             Assert.True(store.IsValid);
         }

@@ -9,7 +9,7 @@
     <PublishTrimmed>False</PublishTrimmed>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Title>Standard Out</Title>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Authors>Dovenator</Authors>
     <PackageId>md.stdout.cli</PackageId>
     <Description>Captures output of a program to assist with debugging.
@@ -24,8 +24,13 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Some breaking changes to the app settings - allowed the browser, or console display options for every target type (instead of just S3).
-Added support for DynamoDB items, loading by keys directly, and correlation Id via an index.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added Query as a CLI option.
+Query is used to get all correlation actions taken by some application in some stage, by some user.
+
+Added Load as a CLI option.
+Load gets a specific correlation Id from an action, given a: application, stage, and user.
+
+Stage, and user parameters are optional.</PackageReleaseNotes>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>stdout</ToolCommandName>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
@@ -61,7 +66,7 @@ Added support for DynamoDB items, loading by keys directly, and correlation Id v
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>

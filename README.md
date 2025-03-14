@@ -76,6 +76,13 @@ stdout db --key appname --partitionkey pk_value --sortkey sk_value
 --sortkey | -sk: The Sort Key for an item.
 ```
 
+**Query**
+```console
+stdout qy --key appname
+
+--key | -k: The name of the configuration in app settings, that defines the data sources to query.
+```
+
 # AppSettings
 
 The `appsettings.json` file is found at the tool's installed location: `%USERPROFILE%\.dotnet\tools`  
@@ -148,6 +155,44 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
         ]
       }
     }
+  },
+  "Query": {
+    "Defaults": {
+      "display": "console|chrome|firefox",
+      "StdOut": {
+        "Key": {
+          "Environment": "dev",
+          "User": ""
+        },
+        "Sources": {
+          "Disk": {
+            "RootPath": "C:/temp/stdout/"
+          },
+          "DynamoDb": {
+            "PartitionKeyName": "pk",
+            "SortKeyName": "sk"
+          }
+        }
+      }
+    },
+    "Sources": {
+      "AppName": {
+        "StdOut": {
+          "Key": {
+            "Application": "customerService"
+          },
+          "Sources": {
+            "S3": {
+              "Bucket": "bucketName",
+              "Prefix": "assets/stdout/"
+            },
+            "DynamoDb": {
+              "TableName": "dbCustomers"
+            }
+          }
+        }
+      }
+    }
   }
 }
 ```
@@ -191,6 +236,19 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 * `IndexSortKeyName:` The name of the index's Sort Key (_optional_).
 * `IndexSortKeyMask:` The format of the index's sk, the correlation id from the command line is merged with `<CID>` (_optional_).
 * `Projection:` The item(*s*) attribute(*s*) to select (_optional: returns all attributes_).
+
+## Query
+
+* `Display:` How you'd like to view the output; console or web browser (_optional: console_).
+* `StdOut:Key:Application:` The name of the program / service that stored the correlation Id (_i.e. customer_service_) (_required_).
+* `StdOut:Key:Environment:` The _stage_ the request ran in (_optional: empty_).
+* `StdOut:Key:User:` An identifier for the user that ran the request (i.e. 12345670) (_optional: empty_).
+* `StdOut:Sources:Disk:RootPath:` The local disk root path, where the key is used to get the correlation Id (_optional: skip Disk config_).
+* `StdOut:Sources:S3:Bucket:` The name of the bucket in S3, where the key is used to get the correlation Id (_optional: skip S3 config_).
+* `StdOut:Sources:S3:Prefix:` A prefix to prepend to the search key (_optional: empty_).
+* `StdOut:Sources:DynamoDb:TableName:` The name of the DynamoDB table (_optional: skip DynamoDB config_).
+* `StdOut:Sources:DynamoDb:PartitionKeyName:` The name of the Partition Key in the DynamoDB table (_where the key is stored_) (_optional: skip DynamoDB config_).
+* `StdOut:Sources:DynamoDb:SortKeyName:` The name of the Sort Key in the DynamoDB table (_where the key's action is split out, and stored_) (_optional: depending on the table setup_).
 
 # Nuget Package
 
@@ -249,6 +307,9 @@ services
 
 // Alternatively skip the config step, but still call StdOut for service injection:
 services.AddStdOutServices();
+
+// Add stdout logging:
+Build().Services.AddStdOutLogging();
 ```
 
 ```json
@@ -298,7 +359,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 ## S3
 
-* `Bucket:` he name of the bucket in S3, where the key is used to store the correlation Id (_required_).
+* `Bucket:` The name of the bucket in S3, where the key is used to store the correlation Id (_required_).
 * `Prefix:` A prefix to prepend to the **Storage Key** (_optional: empty_).
 * `PurgeObjectVersions:` When true, removes all existing object versions after uploading a new one (_optional: false_).
 * `OperationDissect:` Any dissections marked here will **not** be used when attempting the store, load, or query operations (_optional: none_).
@@ -346,6 +407,12 @@ If you only want a particular source to say: read, and query, but **not** to sto
 * Some breaking changes to the app settings - allowed the browser, or console display options for every target type (_instead of just S3_).
 * Added support for DynamoDB items, loading by keys directly, and correlation Id via an index.
 
+## 2.1.0
+
+* Added Query as a CLI option. Query is used to get all correlation actions taken by some application in some stage, by some user.
+* Added Load as a CLI option. Load gets a specific correlation Id from an action, given a: application, stage, and user.
+* Stage, and user parameters are optional.
+
 # Package Changelog
 
 ## 1.0.0
@@ -355,3 +422,8 @@ If you only want a particular source to say: read, and query, but **not** to sto
 ## 1.0.1
 
 * Added debug symbols package.
+
+## 2.1.0
+
+* Breaking change on the `IStdOut` interface, as the argument orders have been swapped around for consistency.
+* Breaking change on some service, and model namespaces; as they moved class libraries; in order to be re-used by the CLI app.

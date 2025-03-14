@@ -1,24 +1,8 @@
 ﻿using ContainerExpressions.Containers;
-using Std.Out.Services;
+using Std.Out.Core.Services;
 
-namespace Std.Out.Models
+namespace Std.Out.Core.Models
 {
-    /// <summary>Creates a deterministic key from the merged parameters, in order to query the lastest correlation Id.</summary>
-    public sealed class StorageKeyOptions
-    {
-        /// <summary>A name to represent the program / service storing the correlation Id (i.e. customer_service).</summary>
-        public string Application { get; set; }
-
-        /// <summary>The stage the request is running in (i.e. uat).</summary>
-        public string Environment { get; set; }
-
-        /// <summary>Pulls the action from the top level calling method defined in the namespace.</summary>
-        public string Namespace { get; set; }
-
-        /// <summary>Offset may be used to go down a function call in the namespace (i.e. to skip middleware etc).</summary>
-        public int? Offset { get; set; }
-    }
-
     /// <summary>Creates a deterministic key from the merged parameters, in order to query the lastest correlation Id for said key in the future.</summary>
     public sealed class StorageKey
     {

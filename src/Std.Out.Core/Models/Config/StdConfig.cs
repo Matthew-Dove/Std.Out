@@ -1,34 +1,7 @@
 ﻿using ContainerExpressions.Containers;
-using System.Drawing;
 
-namespace Std.Out.Models
+namespace Std.Out.Core.Models.Config
 {
-    /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
-    public sealed class StdConfigOptions
-    {
-        /// <summary>Conventional name to find the config settings for stdout.</summary>
-        public const string SECTION_NAME = "StdOut";
-
-        /// <summary>Persistant data storeage options.</summary>
-        public StdSourceOptions Sources { get; set; }
-
-        /// <summary>Creates a deterministic key from the merged parameters, in order to query the lastest correlation Id.</summary>
-        public StorageKeyOptions Key { get; set; }
-    }
-
-    /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
-    public sealed class StdSourceOptions
-    {
-        /// <summary>Storage configuration for local disk.</summary>
-        public DiskStdConfig Disk { get; set; }
-
-        /// <summary>Storage configuration for AWS S3.</summary>
-        public S3StdConfig S3 { get; set; }
-
-        /// <summary>Storage configuration for AWS DynamoDB.</summary>
-        public DynamoDbStdConfig DynamoDb { get; set; }
-    }
-
     /// <summary>The configuration settings for the data storage services, that to persist the last used correlation Id for some key.</summary>
     public sealed class StdConfig
     {
@@ -74,7 +47,7 @@ namespace Std.Out.Models
 
         /// <summary>A prefix to prepend to the key (can be empty).</summary>
         public string Prefix { get => _prefix; set { _prefix = string.IsNullOrWhiteSpace(value) ? string.Empty : value; } }
-        private string _prefix;
+        private string _prefix = string.Empty;
 
         /// <summary>When true, removes all existing object versions after uploading a new one.</summary>
         public bool PurgeObjectVersions { get; set; }
@@ -97,10 +70,11 @@ namespace Std.Out.Models
 
         /// <summary>The name of the Sort Key in the DynamoDB table (where the key is stored), this is optional depending on the table setup.</summary>
         public string SortKeyName { get => _sortKeyName; set { _sortKeyName = string.IsNullOrWhiteSpace(value) ? string.Empty : value; } }
-        private string _sortKeyName;
+        private string _sortKeyName = string.Empty;
 
         /// <summary>The name of TTL attribute for the table, this is optional.</summary>
-        public string TimeToLiveName { get; set; }
+        public string TimeToLiveName { get => _timeToLiveName; set { _timeToLiveName = string.IsNullOrWhiteSpace(value) ? string.Empty : value; } }
+        private string _timeToLiveName = string.Empty;
 
         /// <summary>The minimum time (in hours) this item should be kept for, this is optional.</summary>
         public int? TimeToLiveHours { get; set; }

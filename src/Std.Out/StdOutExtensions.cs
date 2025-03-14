@@ -1,6 +1,6 @@
 ﻿using FrameworkContainers.Infrastructure;
+using Std.Out.Core.Models.Config;
 using Std.Out.Infrastructure;
-using Std.Out.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

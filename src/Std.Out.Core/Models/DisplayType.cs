@@ -1,4 +1,4 @@
-﻿namespace Std.Out.Core.Models.Config
+﻿namespace Std.Out.Core.Models
 {
     public enum DisplayType
     {

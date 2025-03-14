@@ -1,13 +1,11 @@
 ﻿using ContainerExpressions.Containers;
-using ContainerExpressions.Expressions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Std.Out.Core.Models.Config;
 using Std.Out.Core.Models;
-using Std.Out.Core.Services;
-using Std.Out.Models;
-using Std.Out.Services;
+using ContainerExpressions.Expressions;
+using Microsoft.Extensions.Options;
 
-namespace Std.Out
+namespace Std.Out.Core.Services
 {
     /// <summary>The Standard Output service allows you to store, load, and query the last used correlation Id for a particular key; and given source(s).</summary>
     public interface IStdOut
@@ -24,17 +22,17 @@ namespace Std.Out
         /// Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.
         /// <para>The options for AddStdOutServices() must be configured in the host's DI in order to use this overload (i.e. to drop the config argument).</para>
         /// </summary>
-        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
         /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
         /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
-        Task<Response<Unit>> Store(StorageKey key, string correlationId);
+        Task<Response<Unit>> Store(string correlationId, StorageKey key);
 
         /// <summary>Save a "key" to storage (Disk, S3, or DynamoDB), with a payload containing the request's correlation Id.</summary>
-        /// <param name="config">Settings for data storage services, in order to persist the last used correlation Id.</param>
-        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
         /// <param name="correlationId">The unique identifier assigned to this request, that allows you to track logs across multiple services.</param>
+        /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+        /// <param name="config">Settings for data storage services, in order to persist the last used correlation Id.</param>
         /// <returns>A valid response, if the payload was stored under the configured data source, with the key created from the merged parameters.</returns>
-        Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId);
+        Task<Response<Unit>> Store(string correlationId, StorageKey key, StdConfig config);
 
         /// <summary>
         /// Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.
@@ -53,10 +51,10 @@ namespace Std.Out
         Task<Response<Either<string, NotFound>>> Load(StorageKey key);
 
         /// <summary>Load a "key" from storage (Disk, S3, or DynamoDB), to get the most recent correlation Id stored for said key.</summary>
-        /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
         /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application, and action.</param>
+        /// <param name="config">Setings for data storage services, to retrieve the last used correlation Id.</param>
         /// <returns>The most recent correlation Id for the given key, and source(s). Otherwise NotFound, or an invalid response on error.</returns>
-        Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key);
+        Task<Response<Either<string, NotFound>>> Load(StorageKey key, StdConfig config);
 
         /// <summary>
         /// Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.
@@ -74,10 +72,10 @@ namespace Std.Out
         Task<Response<StorageKey[]>> Query(StorageKey key);
 
         /// <summary>Query a "key" (without an action) from storage (Disk, S3, or DynamoDB), to get all actions using the application, environment, and user prefixes.</summary>
-        /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
         /// <param name="key">A deterministic value, which allows you to find a the last used correlation Id, for a particular application.</param>
+        /// <param name="config">Settings for data storage services, to retrieve the last used correlation Id.</param>
         /// <returns>0 to many keys, that can be used in the Load() method, to gather the related correlation Ids.</returns>
-        Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key);
+        Task<Response<StorageKey[]>> Query(StorageKey key, StdConfig config);
     }
 
     public sealed class StdOut(
@@ -134,18 +132,18 @@ namespace Std.Out
         public async Task<Response<Unit>> Store(string correlationId)
         {
             var @namespace = Util.GetCallerNamespace();
-            var config = GetConfig(_options.Value?.Sources);
             var key = GetKey(_options.Value?.Key, namespaceOverride: @namespace);
-            return await Store(config, key, correlationId);
+            var config = GetConfig(_options.Value?.Sources);
+            return await Store(correlationId, key, config);
         }
 
-        public async Task<Response<Unit>> Store(StorageKey key, string correlationId)
+        public async Task<Response<Unit>> Store(string correlationId, StorageKey key)
         {
             var config = GetConfig(_options.Value?.Sources);
-            return await Store(config, key, correlationId);
+            return await Store(correlationId, key, config);
         }
 
-        public async Task<Response<Unit>> Store(StdConfig config, StorageKey key, string correlationId)
+        public async Task<Response<Unit>> Store(string correlationId, StorageKey key, StdConfig config)
         {
             var response = new Response<Unit>();
             if (config == null || key == null || !key.HasAction || string.IsNullOrWhiteSpace(correlationId))
@@ -200,18 +198,18 @@ namespace Std.Out
 
         public async Task<Response<Either<string, NotFound>>> Load(string action)
         {
-            var config = GetConfig(_options.Value?.Sources);
             var key = GetKey(_options.Value?.Key, actionOverride: action);
-            return await Load(config, key);
+            var config = GetConfig(_options.Value?.Sources);
+            return await Load(key, config);
         }
 
         public async Task<Response<Either<string, NotFound>>> Load(StorageKey key)
         {
             var config = GetConfig(_options.Value?.Sources);
-            return await Load(config, key);
+            return await Load(key, config);
         }
 
-        public async Task<Response<Either<string, NotFound>>> Load(StdConfig config, StorageKey key)
+        public async Task<Response<Either<string, NotFound>>> Load(StorageKey key, StdConfig config)
         {
             var response = new Response<Either<string, NotFound>>();
             if (config == null || key == null || !key.HasAction)
@@ -276,18 +274,18 @@ namespace Std.Out
 
         public async Task<Response<StorageKey[]>> Query()
         {
-            var config = GetConfig(_options.Value?.Sources);
             var key = GetKey(_options.Value?.Key, dropAction: true);
-            return await Query(config, key);
+            var config = GetConfig(_options.Value?.Sources);
+            return await Query(key, config);
         }
 
         public async Task<Response<StorageKey[]>> Query(StorageKey key)
         {
             var config = GetConfig(_options.Value?.Sources);
-            return await Query(config, key);
+            return await Query(key, config);
         }
 
-        public async Task<Response<StorageKey[]>> Query(StdConfig config, StorageKey key)
+        public async Task<Response<StorageKey[]>> Query(StorageKey key, StdConfig config)
         {
             var response = new Response<StorageKey[]>();
             if (config == null || key == null || key.HasAction || (config.DynamoDb != null && config.DynamoDb.SortKeyName == string.Empty))

@@ -9,7 +9,7 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CommandService(
-        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db
+        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db, IQueryCommand _qy
         ) : ICommandService
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
@@ -31,6 +31,10 @@ namespace Std.Out.Cli.Commands
             else if (Verb.DynamoDB.Equals(command.Verb))
             {
                 response = await _db.Execute(command);
+            }
+            else if (Verb.Query.Equals(command.Verb))
+            {
+                response = await _qy.Execute(command);
             }
 
             return response;

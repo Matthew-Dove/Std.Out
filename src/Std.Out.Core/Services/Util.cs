@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Std.Out.Services
+namespace Std.Out.Core.Services
 {
     internal static class Util
     {

@@ -26,6 +26,7 @@
         public const string CloudWatch = "cloudwatch";
         public const string S3 = "s3";
         public const string DynamoDB = "dynamodb";
+        public const string Query = "query";
     }
 
     public static class Option

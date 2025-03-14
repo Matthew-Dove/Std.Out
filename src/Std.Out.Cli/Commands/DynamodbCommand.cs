@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Std.Out.Cli.Models;
 using Std.Out.Cli.Services;
+using Std.Out.Core.Models;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 

@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Standard Output</Title>
     <PackageId>md.stdout</PackageId>
-    <Version>1.0.1</Version>
+    <Version>2.1.0</Version>
     <Authors>Matthew Dove</Authors>
     <Description>Captures output of a program to assist with debugging.
 This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
@@ -21,7 +21,9 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Added debug symbols package.</PackageReleaseNotes>
+    <PackageReleaseNotes>Breaking change on the `IStdOut` interface, as the argument orders have been swapped around for consistency.
+
+Breaking change on some service, and model namespaces; as they moved class libraries; in order to be re-used by the CLI app.</PackageReleaseNotes>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
@@ -49,10 +51,6 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>

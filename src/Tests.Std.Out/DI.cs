@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Std.Out.Models;
+using Std.Out.Core.Models.Config;
 using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out

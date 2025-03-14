@@ -76,6 +76,15 @@ namespace Std.Out.Cli.Commands
                     }
                     break;
 
+                case "qy":
+                    key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
+
+                    if (!string.Empty.Equals(key))
+                    {
+                        response = response.With(new CommandModel { Verb = Verb.Query, SettingsKey = key });
+                    }
+                    break;
+
                 default:
                     response.LogErrorValue("Invalid command verb: [{Verb}].".WithArgs(args[0]));
                     break;

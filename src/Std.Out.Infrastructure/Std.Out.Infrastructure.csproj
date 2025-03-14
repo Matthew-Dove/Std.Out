@@ -7,10 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.409.44" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.405.35" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.415.13" />
+    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.410" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.415.17" />
     <PackageReference Include="FrameworkContainers" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
   </ItemGroup>
 
 </Project>
