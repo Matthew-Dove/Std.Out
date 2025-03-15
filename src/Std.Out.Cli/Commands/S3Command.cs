@@ -55,8 +55,8 @@ namespace Std.Out.Cli.Commands
                     }
                     response = response.With(Unit.Instance);
                 }
-                if (command.Action != string.Empty) command.CorrelationId.LogValue(x => "Found correlation Id: {CorrelationId}.".WithArgs(x));
                 filenames.LogValue(x => "{Count} files found.".WithArgs(x.Value.Length));
+                if (command.Action != string.Empty) command.CorrelationId.LogValue(x => "Found correlation Id: {CorrelationId}.".WithArgs(x));
             }
 
             return response;

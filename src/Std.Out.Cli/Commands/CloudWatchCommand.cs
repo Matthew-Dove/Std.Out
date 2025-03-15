@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class CloudWatchCommand(
-        IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display
+        IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : ICloudWatchCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
@@ -24,6 +24,12 @@ namespace Std.Out.Cli.Commands
             var src = GetSourceModel(command.SettingsKey, _config.Value);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
+
+            if (command.Action != string.Empty)
+            {
+                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig.Value, _stdout);
+                if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
+            }
 
             var logGroups = await _service.Query(source, command.CorrelationId);
             if (logGroups)
@@ -36,6 +42,7 @@ namespace Std.Out.Cli.Commands
                     _display.Show(source.Display, group, chunk);
                 }
                 count.LogValue(x => "{Count} logs found.".WithArgs(x));
+                if (command.Action != string.Empty) command.CorrelationId.LogValue(x => "Found correlation Id: {CorrelationId}.".WithArgs(x));
                 response = response.With(Unit.Instance);
             }
 
