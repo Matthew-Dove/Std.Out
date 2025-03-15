@@ -42,6 +42,12 @@ stdout cw --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
 --key | -k: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
 --cid | -c: The Correlation Id to filter the logs by.
+
+stdout cw --key appname --action createCustomer --actionkey appname
+
+--key | -k: The name of the configuration in app settings, that defines the log groups to query, and general filter rules.
+--action | -a: The name of the action to load correlation data from.
+--actionkey | -ak: The name of the Load source to use from the configuration in app settings.
 ```
 
 **S3**
@@ -50,6 +56,12 @@ stdout s3 --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
 --key | -k: The name of the configuration in app settings, that defines the bucket, and path prefix.
 --cid | -c: The Correlation Id is part of (or all) of the key, that target files are found under the prefix, and correlation id.
+
+stdout s3 --key appname --action createCustomer --actionkey appname
+
+--key | -k: The name of the configuration in app settings, that defines the bucket, and path prefix.
+--action | -a: The name of the action to load correlation data from.
+--actionkey | -ak: The name of the Load source to use from the configuration in app settings.
 
 stdout s3 --key appname --path assets/plaintext/c6b8c804-34cb-4cf7-b762-d24b644831e9
 
@@ -63,6 +75,12 @@ stdout db --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9
 
 --key | -k: The name of the configuration in app settings, that defines the table name, and index to use.
 --cid | -c: The Correlation Id stored in a table's index. Used to get the item's pk, and sk values; in order to load the db item.
+
+stdout db --key appname --action createCustomer --actionkey appname
+
+--key | -k: The name of the configuration in app settings, that defines the table name, and index to use.
+--action | -a: The name of the action to load correlation data from.
+--actionkey | -ak: The name of the Load source to use from the configuration in app settings.
 
 stdout db --key appname --partitionkey pk_value
 
@@ -81,7 +99,7 @@ stdout db --key appname --partitionkey pk_value --sortkey sk_value
 stdout ld --key appname --action action_name
 
 --key | -k: The name of the configuration in app settings, that defines the data sources to load from.
---action | -a: The name of the action to load (taken by some service), along with the source keys: app, env, and user settings.
+--action | -a: The name of the action to load correlation data from.
 ```
 
 **Query**
@@ -170,7 +188,7 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
       "StdOut": {
         "Key": {
           "Environment": "dev",
-          "User": ""
+          "User": "12345670"
         },
         "Sources": {
           "Disk": {
@@ -250,7 +268,7 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 * `Display:` How you'd like to view the output; console or web browser (_optional: console_).
 * `StdOut:Key:Application:` The name of the program / service that stored the correlation Id (_i.e. customer_service_) (_required_).
 * `StdOut:Key:Environment:` The _stage_ the request ran in (_optional: empty_).
-* `StdOut:Key:User:` An identifier for the user that ran the request (i.e. 12345670) (_optional: empty_).
+* `StdOut:Key:User:` An identifier for the user that ran the request (_optional: empty_).
 * `StdOut:Sources:Disk:RootPath:` The local disk root path, where the key is used to get the correlation Id (_optional: skip Disk config_).
 * `StdOut:Sources:S3:Bucket:` The name of the bucket in S3, where the key is used to get the correlation Id (_optional: skip S3 config_).
 * `StdOut:Sources:S3:Prefix:` A prefix to prepend to the search key (_optional: empty_).

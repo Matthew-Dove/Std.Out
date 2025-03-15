@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class DynamodbCommand (
-        IOptions<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display
+        IOptions<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IDynamodbCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
@@ -26,6 +26,15 @@ namespace Std.Out.Cli.Commands
             var source = src.Value;
             var items = new Response<string[]>();
 
+            if (command.Action != string.Empty)
+            {
+                var correlationId = await LoadCorrelationIdFromAction(command);
+                if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
+
+                source.IndexPartitionKeyMask = source.IndexPartitionKeyMask.Replace(CliConstants.CidMask, command.CorrelationId);
+                source.IndexSortKeyMask = source.IndexPartitionKeyMask.Replace(CliConstants.CidMask, command.CorrelationId);
+            }
+
             if (command.CorrelationId != string.Empty) items = await _service.QueryIndex(source);
             else items = await _service.Query(source, command.PartitionKey, command.SortKey);
 
@@ -36,7 +45,33 @@ namespace Std.Out.Cli.Commands
                     _display.Show(source.Display, source.TableName, item);
                 }
                 items.LogValue(x => "{Count} item{Plural} found.".WithArgs(x.Value.Length, x.Value.Length == 1 ? "" : "s"));
+                if (command.Action != string.Empty) command.CorrelationId.LogValue(x => "Found correlation Id: {CorrelationId}.".WithArgs(x));
                 response = response.With(Unit.Instance);
+            }
+
+            return response;
+        }
+
+        private async Task<Response<Either<BadRequest, Unit>>> LoadCorrelationIdFromAction(CommandModel command)
+        {
+            var response = new Response<Either<BadRequest, Unit>>();
+
+            var src = LoadCommand.GetSourceModel(command.ActionSettingsKey, _loadConfig.Value);
+            if (!src) return response.With(new BadRequest());
+            var source = src.Value;
+
+            var stdKey = LoadCommand.BuildStdKey(source.StdOut.Key, command.Action);
+            var stdConfig = LoadCommand.BuildStdConfig(source.StdOut.Sources, Operations.Store | Operations.Query);
+
+            var load = await _stdout.Load(stdKey, stdConfig);
+            if (load)
+            {
+                if (load.Value.TryGetT1(out var correlationId))
+                {
+                    command.CorrelationId = correlationId;
+                    response = response.With(Unit.Instance);
+                }
+                else response.With(new BadRequest()).LogValue("Correlation Id not found.");
             }
 
             return response;

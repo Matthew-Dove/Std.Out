@@ -16,7 +16,8 @@ public sealed class CommandParser : ICommandParser
         var response = new Response<CommandModel>();
         if (args.Length < 3) return response.LogErrorValue("{Args}(s) args found, but expected at least 3 arguments (verb, and correlation id).".WithArgs(args.Length));
 
-        string key = string.Empty, cid = string.Empty;
+        string key = string.Empty, cid = string.Empty, action = string.Empty, actionKey = string.Empty;
+        var isValid = true;
         var kv = GetOptionKeyValues(args);
 
         switch (args[0].ToLowerInvariant())
@@ -24,62 +25,159 @@ public sealed class CommandParser : ICommandParser
             case "cw":
                 key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
                 cid = kv.GetOptions(Option.CorrelationId, Option.C);
+                action = kv.GetOptions(Option.Action, Option.A);
 
-                if (!string.Empty.Equals(key))
+                /**
+                 * Allowed option combos for CloudWatch:
+                 * - cid
+                 * - action actionkey
+                **/
+
+                isValid = false;
+
+                if (!string.Empty.Equals(cid))
                 {
-                    response = response.With(new CommandModel { Verb = Verb.CloudWatch, SettingsKey = key, CorrelationId = cid });
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    isValid = true;
+                }
+                else if (!string.Empty.Equals(action))
+                {
+                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    cid = string.Empty;
+                    isValid = !string.Empty.Equals(actionKey);
+                }
+
+                if (isValid && !string.Empty.Equals(key))
+                {
+                    response = response.With(new CommandModel {
+                        Verb = Verb.CloudWatch,
+                        SettingsKey = key,
+                        CorrelationId = cid,
+                        Action = action,
+                        ActionSettingsKey = actionKey
+                    });
                 }
                 break;
 
             case "s3":
                 key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
                 cid = kv.GetOptions(Option.CorrelationId, Option.C);
+                action = kv.GetOptions(Option.Action, Option.A);
 
                 var path = kv.GetOptions(Option.Path, Option.P);
 
-                if (!string.Empty.Equals(cid) && !string.Empty.Equals(path)) // Allow either cid, or path to be passed (but not both).
+                /**
+                 * Allowed option combos for S3:
+                 * - cid
+                 * - action actionkey
+                 * - path
+                **/
+
+                isValid = false;
+
+                if (!string.Empty.Equals(cid))
                 {
-                    response.LogErrorValue("Cannot pass both {CorrelationId}, and {Path} options at once.".WithArgs(Option.CorrelationId, Option.Path));
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    path = string.Empty;
+                    isValid = true;
                 }
-                else if (string.Empty.Equals(cid) && string.Empty.Equals(path)) // Must have one of path, or cid.
+                else if (!string.Empty.Equals(action))
                 {
-                    response.LogErrorValue("Must have at one of {CorrelationId}, and {Path} options.".WithArgs(Option.CorrelationId, Option.Path));
+                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    cid = string.Empty;
+                    path = string.Empty;
+                    isValid = !string.Empty.Equals(actionKey);
                 }
-                else if (!string.Empty.Equals(key))
+                else if (!string.Empty.Equals(path))
                 {
-                    response = response.With(new CommandModel { Verb = Verb.S3, SettingsKey = key, CorrelationId = cid, Path = path });
+                    cid = string.Empty;
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    isValid = true;
+                }
+
+                if (isValid && !string.Empty.Equals(key))
+                {
+                    response = response.With(new CommandModel {
+                        Verb = Verb.S3,
+                        SettingsKey = key,
+                        CorrelationId = cid,
+                        Path = path,
+                        Action = action,
+                        ActionSettingsKey = actionKey
+                    });
                 }
                 break;
 
             case "db":
                 key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
                 cid = kv.GetOptions(Option.CorrelationId, Option.C);
+                action = kv.GetOptions(Option.Action, Option.A);
 
                 var pk = kv.GetOptions(Option.PartitionKey, Option.Pk);
                 var sk = kv.GetOptions(Option.SortKey, Option.Sk);
 
-                if (!string.Empty.Equals(pk) && !string.Empty.Equals(cid)) // Allow either pk, or cid to be passed (but not both).
+                /**
+                 * Allowed option combos for DynamoDB:
+                 * - cid
+                 * - action actionkey
+                 * - pk sk
+                 * - pk
+                **/
+
+                isValid = false;
+
+                if (!string.Empty.Equals(cid))
                 {
-                    response.LogErrorValue("Cannot pass both {PartitionKey}, and {CorrelationId} options at once.".WithArgs(Option.PartitionKey, Option.CorrelationId));
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    pk = string.Empty;
+                    sk = string.Empty;
+                    isValid = true;
                 }
-                else if (string.Empty.Equals(pk) && string.Empty.Equals(cid)) // Must have one of pk, or cid.
+                else if (!string.Empty.Equals(action))
                 {
-                    response.LogErrorValue("Must have at one of {PartitionKey}, and {CorrelationId} options.".WithArgs(Option.PartitionKey, Option.CorrelationId));
+                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    cid = string.Empty;
+                    pk = string.Empty;
+                    sk = string.Empty;
+                    isValid = !string.Empty.Equals(actionKey);
                 }
-                else if (!string.Empty.Equals(sk) && !string.Empty.Equals(cid)) // Not valid to send sk, when using cid.
+                else if (!string.Empty.Equals(pk) && !string.Empty.Equals(sk))
                 {
-                    response.LogErrorValue("Cannot pass {SortKey}, when using the {CorrelationId} option.".WithArgs(Option.SortKey, Option.CorrelationId));
+                    cid = string.Empty;
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    isValid = true;
                 }
-                else if (!string.Empty.Equals(key))
+                else if (!string.Empty.Equals(pk))
                 {
-                    response = response.With(new CommandModel { Verb = Verb.DynamoDB, SettingsKey = key, CorrelationId = cid, PartitionKey = pk, SortKey = sk });
+                    cid = string.Empty;
+                    action = string.Empty;
+                    actionKey = string.Empty;
+                    sk = string.Empty;
+                    isValid = true;
+                }
+
+                if (isValid && !string.Empty.Equals(key))
+                {
+                    response = response.With(new CommandModel {
+                        Verb = Verb.DynamoDB,
+                        SettingsKey = key,
+                        CorrelationId = cid,
+                        PartitionKey = pk,
+                        SortKey = sk,
+                        Action = action,
+                        ActionSettingsKey = actionKey
+                    });
                 }
                 break;
 
             case "ld":
                 key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-
-                var action = kv.GetOptions(Option.Action, Option.A).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Action));
+                action = kv.GetOptions(Option.Action, Option.A).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Action));
 
                 if (!string.Empty.Equals(key) && !string.Empty.Equals(action))
                 {
@@ -101,6 +199,7 @@ public sealed class CommandParser : ICommandParser
                 break;
         }
 
+        if (!isValid) isValid.LogValue("Arguments aren't valid for verb: [{Verb}].".WithArgs(args[0]));
         return response;
     }
 

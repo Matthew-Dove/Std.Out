@@ -3,13 +3,16 @@
     "Std.Out.Cli": {
       "commandName": "Project",
       //"commandLineArgs": "cw --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9"
+      //"commandLineArgs": "cw --key appname --action Tests.Std.Out.StdOutTests.Store --actionkey appname"
       //"commandLineArgs": "s3 --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9"
+      "commandLineArgs": "s3 --key appname --action Tests.Std.Out.StdOutTests.Store --actionkey appname"
       //"commandLineArgs": "s3 --key appname --path assets/plaintext/c6b8c804-34cb-4cf7-b762-d24b644831e9"
       //"commandLineArgs": "db --key appname --cid c6b8c804-34cb-4cf7-b762-d24b644831e9"
+      //"commandLineArgs": "db --key appname --action Tests.Std.Out.StdOutTests.Store --actionkey appname"
       //"commandLineArgs": "db --key appname -pk pk_value"
       //"commandLineArgs": "db --key appname -pk pk_value -sk sk_value"
       //"commandLineArgs": "qy --key appname"
-      "commandLineArgs": "ld --key appname --action Tests.Std.Out.StdOutTests.Store"
+      //"commandLineArgs": "ld --key appname --action Tests.Std.Out.StdOutTests.Store"
     }
   }
 }

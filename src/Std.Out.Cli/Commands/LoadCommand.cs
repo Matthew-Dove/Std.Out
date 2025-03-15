@@ -36,9 +36,12 @@ namespace Std.Out.Cli.Commands
 
             if (load)
             {
-                if (load.Value.TryGetT1(out var correlationId)) _display.Show(source.Display, stdKey.ToString(), correlationId);
-                else load.LogValue("Correlation Id not found.");
-                response = response.With(Unit.Instance);
+                if (load.Value.TryGetT1(out var correlationId))
+                {
+                    _display.Show(source.Display, stdKey.ToString(), correlationId);
+                    response = response.With(Unit.Instance);
+                }
+                else response = response.With(new BadRequest()).LogValue("Correlation Id not found.");
             }
 
             return response;
@@ -132,17 +135,27 @@ namespace Std.Out.Cli.Commands
             return response;
         }
 
-        private static StorageKey BuildStdKey(StdOutOptionsKey source, string action)
+        internal static StorageKey BuildStdKey(StdOutOptionsKey source, string action = null)
         {
             var key = default(StorageKey);
             var app = source.Application;
             var env = source.Environment;
             var usr = source.User;
 
-            if (env != string.Empty && usr != string.Empty) key = StorageKey.CreateWithEnvironmentAndUser(app, env, usr, action);
-            else if (usr != string.Empty) key = StorageKey.CreateWithUser(app, usr, action);
-            else if (env != string.Empty) key = StorageKey.CreateWithEnvironment(app, env, action);
-            else key = StorageKey.Create(app, action);
+            if (action == null)
+            {
+                if (env != string.Empty && usr != string.Empty) key = StorageKey.CreateWithEnvironmentAndUser(app, env, usr);
+                else if (usr != string.Empty) key = StorageKey.CreateWithUser(app, usr);
+                else if (env != string.Empty) key = StorageKey.CreateWithEnvironment(app, env);
+                else key = StorageKey.Create(app);
+            }
+            else
+            {
+                if (env != string.Empty && usr != string.Empty) key = StorageKey.CreateWithEnvironmentAndUser(app, env, usr, action);
+                else if (usr != string.Empty) key = StorageKey.CreateWithUser(app, usr, action);
+                else if (env != string.Empty) key = StorageKey.CreateWithEnvironment(app, env, action);
+                else key = StorageKey.Create(app, action);
+            }
 
             return key;
         }

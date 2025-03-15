@@ -1,4 +1,5 @@
-﻿using Amazon.DynamoDBv2;
+﻿using Amazon.Auth.AccessControlPolicy;
+using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using ContainerExpressions.Containers;
@@ -19,25 +20,35 @@ namespace Std.Out.Core.Services
 
     public sealed class DynamodbService : IDynamodbService
     {
+        private const string _projectionPrefix = "#attribute_";
+
         private static readonly AmazonDynamoDBClient _client = new AmazonDynamoDBClient();
 
         public async Task<Response<string[]>> Query(DynamodbSourceModel source, string pk, string sk)
         {
             var response = new Response<string[]>();
+            var expressionAttributeNames = new Dictionary<string, string>(1 + source.Projection.Length + (sk == string.Empty ? 0 : 1));
+            var projectionExpressionParts = new string[source.Projection.Length];
+
+            expressionAttributeNames["#pk"] = source.PartitionKeyName;
+            for (int i = 0; i < source.Projection.Length; i++)
+            {
+                var projection = $"{_projectionPrefix}{source.Projection[i]}";
+                expressionAttributeNames[projection] = source.Projection[i];
+                projectionExpressionParts[i] = projection;
+            }
+            var projectionExpression = source.Projection.Length == 0 ? null : string.Join(", ", projectionExpressionParts);
 
             var queryRequest = new QueryRequest
             {
                 TableName = source.TableName,
                 KeyConditionExpression = "#pk = :pk",
-                ExpressionAttributeNames = new Dictionary<string, string>
-                {
-                    { "#pk", source.PartitionKeyName }
-                },
+                ExpressionAttributeNames = expressionAttributeNames,
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     { ":pk", new AttributeValue { S = pk } }
                 },
-                ProjectionExpression = source.Projection.Length == 0 ? null : string.Join(", ", source.Projection),
+                ProjectionExpression = projectionExpression,
                 Limit = CoreConstants.MaxLimit
             };
 
@@ -73,21 +84,28 @@ namespace Std.Out.Core.Services
         public async Task<Response<string[]>> QueryIndex(DynamodbSourceModel source)
         {
             var response = new Response<string[]>();
+            var expressionAttributeNames = new Dictionary<string, string>(2 + (source.SortKeyName == string.Empty ? 0 : 1));
+            var projectionExpression = $"{_projectionPrefix}{source.PartitionKeyName}";
+
+            expressionAttributeNames[$"#ixpk"] = source.IndexPartitionKeyName;
+            expressionAttributeNames[$"{_projectionPrefix}{source.PartitionKeyName}"] = source.PartitionKeyName;
+            if (source.SortKeyName != string.Empty)
+            {
+                expressionAttributeNames[$"{_projectionPrefix}{source.SortKeyName}"] = source.SortKeyName;
+                projectionExpression += $", {_projectionPrefix}{source.SortKeyName}";
+            }
 
             var queryRequest = new QueryRequest
             {
                 TableName = source.TableName,
                 IndexName = source.IndexName,
                 KeyConditionExpression = "#ixpk = :ixpk",
-                ExpressionAttributeNames = new Dictionary<string, string>
-                {
-                    { "#ixpk", source.IndexPartitionKeyName }
-                },
+                ExpressionAttributeNames = expressionAttributeNames,
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     { ":ixpk", new AttributeValue { S = source.IndexPartitionKeyMask } }
                 },
-                ProjectionExpression = source.PartitionKeyName + (source.SortKeyName == string.Empty ? string.Empty : ("," + source.SortKeyName)),
+                ProjectionExpression = projectionExpression,
                 Limit = 1
             };
 
@@ -129,20 +147,22 @@ namespace Std.Out.Core.Services
         public async Task<Response<string[]>> QuerySk(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName)
         {
             var response = new Response<string[]>();
+            var expressionAttributeNames = new Dictionary<string, string>(2);
+            var projectionExpression = $"{_projectionPrefix}{sortKeyName}";
+
+            expressionAttributeNames[$"#pk"] = partitionKeyName;
+            expressionAttributeNames[$"{_projectionPrefix}{sortKeyName}"] = sortKeyName;
 
             var queryRequest = new QueryRequest
             {
                 TableName = tableName,
                 KeyConditionExpression = "#pk = :pk",
-                ExpressionAttributeNames = new Dictionary<string, string>
-                {
-                    { "#pk", partitionKeyName }
-                },
+                ExpressionAttributeNames = expressionAttributeNames,
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     { ":pk", new AttributeValue { S = partitionKeyValue } }
                 },
-                ProjectionExpression = sortKeyName,
+                ProjectionExpression = projectionExpression,
                 Limit = CoreConstants.MaxLimit
             };
 
