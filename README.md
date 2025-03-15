@@ -76,11 +76,19 @@ stdout db --key appname --partitionkey pk_value --sortkey sk_value
 --sortkey | -sk: The Sort Key for an item.
 ```
 
+**Load**
+```console
+stdout ld --key appname --action action_name
+
+--key | -k: The name of the configuration in app settings, that defines the data sources to load from.
+--action | -a: The name of the action to load (taken by some service), along with the source keys: app, env, and user settings.
+```
+
 **Query**
 ```console
 stdout qy --key appname
 
---key | -k: The name of the configuration in app settings, that defines the data sources to query.
+--key | -k: The name of the configuration in app settings, that defines the data sources to load from.
 ```
 
 # AppSettings
@@ -156,7 +164,7 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
       }
     }
   },
-  "Query": {
+  "Load": {
     "Defaults": {
       "display": "console|chrome|firefox",
       "StdOut": {
@@ -237,7 +245,7 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 * `IndexSortKeyMask:` The format of the index's sk, the correlation id from the command line is merged with `<CID>` (_optional_).
 * `Projection:` The item(*s*) attribute(*s*) to select (_optional: returns all attributes_).
 
-## Query
+## Load
 
 * `Display:` How you'd like to view the output; console or web browser (_optional: console_).
 * `StdOut:Key:Application:` The name of the program / service that stored the correlation Id (_i.e. customer_service_) (_required_).
@@ -411,7 +419,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Added Query as a CLI option. Query is used to get all correlation actions taken by some application in some stage, by some user.
 * Added Load as a CLI option. Load gets a specific correlation Id from an action, given a: application, stage, and user.
-* Stage, and user parameters are optional.
+* Stage, and user parameters are optional for Load, and Query.
 
 # Package Changelog
 

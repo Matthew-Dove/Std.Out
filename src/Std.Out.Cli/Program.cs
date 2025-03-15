@@ -64,7 +64,6 @@ namespace Std.Out.Cli
             builder.Services.Configure<CloudWatchConfig>(builder.Configuration.GetSection(CloudWatchConfig.SECTION_NAME));
             builder.Services.Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME));
             builder.Services.Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME));
-            builder.Services.Configure<QueryConfig>(builder.Configuration.GetSection(QueryConfig.SECTION_NAME));
             builder.Services.Configure<LoadConfig>(builder.Configuration.GetSection(LoadConfig.SECTION_NAME));
 
             builder.Services.AddServicesByConvention("Std.Out.Cli", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");

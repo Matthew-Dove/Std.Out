@@ -35,7 +35,7 @@ namespace Std.Out.Cli.Commands
                 {
                     _display.Show(source.Display, source.TableName, item);
                 }
-                items.LogValue(x => "{Count} item{Plural} found.".WithArgs(x.Value.Length, x.Value.Length == 1 ? "" : "(s)"));
+                items.LogValue(x => "{Count} item{Plural} found.".WithArgs(x.Value.Length, x.Value.Length == 1 ? "" : "s"));
                 response = response.With(Unit.Instance);
             }
 

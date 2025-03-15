@@ -19,6 +19,12 @@
 
         /// <summary>The prefix key path of a S3 bucket, to retrieve files from.</summary>
         public string Path { get; set; }
+
+        /// <summary>The action to load, from the correlation sources (in combination with the key's settings: application, environment, and user).</summary>
+        public string Action { get; set; }
+
+        /// <summary>The key to use when loading the action, in order to get the correlation Id.</summary>
+        public string ActionSettingsKey { get; set; }
     }
 
     public sealed class Verb
@@ -26,6 +32,7 @@
         public const string CloudWatch = "cloudwatch";
         public const string S3 = "s3";
         public const string DynamoDB = "dynamodb";
+        public const string Load = "load";
         public const string Query = "query";
     }
 
@@ -45,6 +52,12 @@
 
         public const string Path = "--path";
         public const string P = "-p";
+
+        public const string Action = "--action";
+        public const string A = "-a";
+
+        public const string ActionKey = "--actionkey";
+        public const string Ak = "-ak";
     }
 
     public static class Flag
