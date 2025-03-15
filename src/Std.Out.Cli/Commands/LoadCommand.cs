@@ -190,5 +190,30 @@ namespace Std.Out.Cli.Commands
 
             return config;
         }
+
+        internal static async Task<Response<Either<BadRequest, Unit>>> LoadCorrelationIdFromAction(CommandModel command, LoadConfig config, IStdOut service)
+        {
+            var response = new Response<Either<BadRequest, Unit>>();
+
+            var src = GetSourceModel(command.ActionSettingsKey, config);
+            if (!src) return response.With(new BadRequest());
+            var source = src.Value;
+
+            var stdKey = BuildStdKey(source.StdOut.Key, command.Action);
+            var stdConfig = BuildStdConfig(source.StdOut.Sources, Operations.Store | Operations.Query);
+
+            var load = await service.Load(stdKey, stdConfig);
+            if (load)
+            {
+                if (load.Value.TryGetT1(out var correlationId))
+                {
+                    command.CorrelationId = correlationId;
+                    response = response.With(Unit.Instance);
+                }
+                else response.With(new BadRequest()).LogValue("Correlation Id not found.");
+            }
+
+            return response;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Commands
     }
 
     public sealed class S3Command(
-        IOptions<S3Config> _config, IS3Service _service, IDisplayService _display
+        IOptions<S3Config> _config, IS3Service _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IS3Command
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
@@ -24,6 +24,14 @@ namespace Std.Out.Cli.Commands
             var src = GetSourceModel(command.SettingsKey, _config.Value, command.CorrelationId, command.Path);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
+
+            if (command.Action != string.Empty)
+            {
+                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig.Value, _stdout);
+                if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
+
+                source.Prefix = source.Prefix.Replace(CliConstants.CidMask, command.CorrelationId);
+            }
 
             var filenames = await _service.List(source);
             if (filenames)
@@ -47,6 +55,7 @@ namespace Std.Out.Cli.Commands
                     }
                     response = response.With(Unit.Instance);
                 }
+                if (command.Action != string.Empty) command.CorrelationId.LogValue(x => "Found correlation Id: {CorrelationId}.".WithArgs(x));
                 filenames.LogValue(x => "{Count} files found.".WithArgs(x.Value.Length));
             }
 
@@ -84,7 +93,8 @@ namespace Std.Out.Cli.Commands
                 if (source.Files == null || source.Files.Length == 0) model.Files = Array.Empty<string>();
 
                 model.ContentType = model.ContentType.ToLowerInvariant();
-                model.Prefix = string.Empty.Equals(correlationId) ? path : model.Prefix.Replace(CliConstants.CidMask, correlationId);
+                if (path != string.Empty) model.Prefix = path;
+                if (correlationId != string.Empty) model.Prefix = model.Prefix.Replace(CliConstants.CidMask, correlationId);
 
                 response = response.With(model);
             }
