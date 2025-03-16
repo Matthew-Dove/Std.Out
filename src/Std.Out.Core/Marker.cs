@@ -1,4 +1,4 @@
-﻿namespace Std.Out.Infrastructure
+﻿namespace Std.Out.Core
 {
     /// <summary>Interface to mark this project for DI.</summary>
     public interface IMarker;

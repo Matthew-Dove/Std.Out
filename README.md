@@ -334,8 +334,8 @@ services
 // Alternatively skip the config step, but still call StdOut for service injection:
 services.AddStdOutServices();
 
-// Add stdout logging:
-Build().Services.AddStdOutLogging();
+// Add logging:
+Build().Services.AddContainerExpressionsLogging();
 ```
 
 ```json
@@ -453,3 +453,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Breaking change on the `IStdOut` interface, as the argument orders have been swapped around for consistency.
 * Breaking change on some service, and model namespaces; as they moved class libraries; in order to be re-used by the CLI app.
+
+## 2.1.1
+
+* Fixed nuget package source issues, that were treating internal projects / class libraries as external packages.

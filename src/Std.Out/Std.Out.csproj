@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Standard Output</Title>
     <PackageId>md.stdout</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Authors>Matthew Dove</Authors>
     <Description>Captures output of a program to assist with debugging.
 This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
@@ -21,13 +21,18 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Breaking change on the `IStdOut` interface, as the argument orders have been swapped around for consistency.
-
-Breaking change on some service, and model namespaces; as they moved class libraries; in order to be re-used by the CLI app.</PackageReleaseNotes>
+    <PackageReleaseNotes>Included reference projects in the pack command, so they aren't treated as external nuget sources.</PackageReleaseNotes>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<TargetsForTfmSpecificBuildOutput>
+		$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
+	</TargetsForTfmSpecificBuildOutput>
+	  <AllowedOutputExtensionsInPackageBuildOutputFolder>
+		  $(AllowedOutputExtensionsInPackageBuildOutputFolder);.xml
+		  $(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb
+	  </AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -54,8 +59,27 @@ Breaking change on some service, and model namespaces; as they moved class libra
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" />
-    <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
   </ItemGroup>
+
+  <ItemGroup>
+	  <ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj">
+		  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+		  <IncludeAssets>Std.Out.Core.dll</IncludeAssets>
+	  </ProjectReference>
+	  <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj">
+		  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+		  <IncludeAssets>Std.Out.Infrastructure.dll</IncludeAssets>
+	  </ProjectReference>
+  </ItemGroup>
+
+	<Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+		<ItemGroup>
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.xml'))" />
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.pdb'))" />
+		</ItemGroup>
+	</Target>
 
 </Project>

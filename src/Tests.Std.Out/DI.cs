@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FrameworkContainers.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ namespace Tests.Std.Out
                     }
                 );
             })
-            .Build().Services.AddStdOutLogging();
+            .Build().Services.AddContainerExpressionsLogging();
         }
     }
 }

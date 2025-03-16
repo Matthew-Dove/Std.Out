@@ -1,6 +1,5 @@
-﻿using FrameworkContainers.Infrastructure;
-using Std.Out.Core.Models.Config;
-using Std.Out.Infrastructure;
+﻿using Std.Out.Core.Models.Config;
+using Std.Out.Core.Services;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -12,11 +11,15 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options != null) services.Configure(options);
 
             return services
-                .AddSingleton<IMarker, Marker>()
-                .AddServicesByConvention("Std.Out", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");
+                .AddSingleton<Std.Out.Infrastructure.IMarker, Std.Out.Infrastructure.Marker>()
+                .AddSingleton<Std.Out.Core.IMarker, Std.Out.Core.Marker>()
+                .AddSingleton<IStdOut, StdOut>()
+                .AddSingleton<IDiskStorage, DiskStorage>()
+                .AddSingleton<IS3Storage, S3Storage>()
+                .AddSingleton<IS3Service, S3Service>()
+                .AddSingleton<IDynamodbStorage, DynamodbStorage>()
+                .AddSingleton<IDynamodbService, DynamodbService>()
+                ;
         }
-
-        /// <summary>Adds stdout information, and error logging to the host's logging providers.</summary>
-        public static IServiceProvider AddStdOutLogging(this IServiceProvider sp) => sp.AddContainerExpressionsLogging();
     }
 }

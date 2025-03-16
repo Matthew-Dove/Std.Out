@@ -34,6 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" />
+    <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" />
     <ProjectReference Include="..\Std.Out\Std.Out.csproj" />
   </ItemGroup>
 
