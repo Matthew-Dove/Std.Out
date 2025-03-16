@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Cli.Models
 {
-    public sealed class CommandModel
+    internal sealed class CommandModel
     {
         /// <summary>The target to query (i.e. CloudWatch, S3, DynamoDB).</summary>
         public string Verb { get; set; }
@@ -27,7 +27,7 @@
         public string ActionSettingsKey { get; set; }
     }
 
-    public sealed class Verb
+    internal sealed class Verb
     {
         public const string CloudWatch = "cloudwatch";
         public const string S3 = "s3";
@@ -36,7 +36,7 @@
         public const string Query = "query";
     }
 
-    public static class Option
+    internal static class Option
     {
         public const string Key = "--key";
         public const string K = "-k";
@@ -60,7 +60,7 @@
         public const string Ak = "-ak";
     }
 
-    public static class Flag
+    internal static class Flag
     {
         public const string NoLog = "--nolog";
         public const string Nl = "-nl";

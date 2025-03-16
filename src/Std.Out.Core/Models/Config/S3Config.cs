@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Core.Models.Config
 {
-    public sealed class S3Config
+    internal sealed class S3Config
     {
         public const string SECTION_NAME = "S3";
 
@@ -8,7 +8,7 @@
         public S3SourceModel Defaults { get; set; }
     }
 
-    public sealed class S3SourceModel
+    internal sealed class S3SourceModel
     {
         public DisplayType Display { get; set; }
         public string Bucket { get; set; }

@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
-    public interface IS3Service
+    internal interface IS3Service
     {
         Task<Response<string[]>> List(S3SourceModel source);
         Task<Response<string>> Download(S3SourceModel source, string key);
@@ -18,7 +18,7 @@ namespace Std.Out.Core.Services
         Task<Response<Unit>> Upload(string bucket, string key, string content, bool purgeObjectVersions);
     }
 
-    public sealed class S3Service : IS3Service
+    internal sealed class S3Service : IS3Service
     {
         private static readonly AmazonS3Client _client = new AmazonS3Client();
         private static readonly ConcurrentDictionary<string, string> _cache = new ConcurrentDictionary<string, string>();

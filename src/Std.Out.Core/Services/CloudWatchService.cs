@@ -7,14 +7,14 @@ using System.Text;
 
 namespace Std.Out.Core.Services
 {
-    public sealed class LogGroup : Alias<string> { public LogGroup(string value) : base(value) { } }
+    internal sealed class LogGroup : Alias<string> { public LogGroup(string value) : base(value) { } }
 
-    public interface ICloudWatchService
+    internal interface ICloudWatchService
     {
         Task<Response<(LogGroup, string[])[]>> Query(CloudWatchSourceModel source, string correlationId);
     }
 
-    public sealed class CloudWatchService : ICloudWatchService
+    internal sealed class CloudWatchService : ICloudWatchService
     {
         private static readonly AmazonCloudWatchLogsClient _client = new AmazonCloudWatchLogsClient();
 

@@ -8,7 +8,7 @@ using System.Net;
 
 namespace Std.Out.Core.Services
 {
-    public interface IDynamodbService
+    internal interface IDynamodbService
     {
         Task<Response<string[]>> Query(DynamodbSourceModel source, string pk, string sk);
         Task<Response<string[]>> QueryIndex(DynamodbSourceModel source);
@@ -17,7 +17,7 @@ namespace Std.Out.Core.Services
         Task<Response<Either<string, NotFound>>> Get(string tableName, string partitionKeyName, string partitionKeyValue, string sortKeyName, string sortKeyValue);
     }
 
-    public sealed class DynamodbService : IDynamodbService
+    internal sealed class DynamodbService : IDynamodbService
     {
         private const string _projectionPrefix = "#attribute_";
 

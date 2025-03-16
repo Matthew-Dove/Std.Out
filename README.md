@@ -463,3 +463,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.1.6
 
 * Moved stdout dependency injection extensions down to the core layer, to keep the nuget packages in one place; avoiding duplications.
+
+# 2.1.7
+
+* Made all types internal, not related to the IStdOut interface, option models, or DI extension methods.

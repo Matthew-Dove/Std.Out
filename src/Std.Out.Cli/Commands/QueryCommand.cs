@@ -7,12 +7,12 @@ using Std.Out.Core.Services;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface IQueryCommand
+    internal interface IQueryCommand
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class QueryCommand(
+    internal sealed class QueryCommand(
         IOptions<LoadConfig> _config, IStdOut _service, IDisplayService _display
         ) : IQueryCommand
     {

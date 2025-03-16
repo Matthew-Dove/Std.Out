@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Core.Models.Config
 {
-    public sealed class LoadConfig
+    internal sealed class LoadConfig
     {
         public const string SECTION_NAME = "Load";
 
@@ -8,7 +8,7 @@
         public LoadSourceModel Defaults { get; set; }
     }
 
-    public sealed class LoadSourceModel
+    internal sealed class LoadSourceModel
     {
         public DisplayType Display { get; set; }
         public StdOutOptions StdOut { get; set; }

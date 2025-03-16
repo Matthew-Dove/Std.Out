@@ -8,12 +8,12 @@ using Std.Out.Core.Services;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface IDynamodbCommand
+    internal interface IDynamodbCommand
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class DynamodbCommand (
+    internal sealed class DynamodbCommand (
         IOptions<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IDynamodbCommand
     {

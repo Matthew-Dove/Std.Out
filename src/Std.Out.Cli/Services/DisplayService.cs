@@ -6,12 +6,12 @@ using System.Net;
 
 namespace Std.Out.Cli.Services
 {
-    public interface IDisplayService
+    internal interface IDisplayService
     {
         Response<Unit> Show(DisplayType browser, string heading, string body);
     }
 
-    public sealed class DisplayService : IDisplayService
+    internal sealed class DisplayService : IDisplayService
     {
         public Response<Unit> Show(DisplayType display, string heading, string body)
         {

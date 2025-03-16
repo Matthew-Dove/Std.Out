@@ -3,12 +3,12 @@ using Std.Out.Cli.Models;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface ICommandService
+    internal interface ICommandService
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(string[] args);
     }
 
-    public sealed class CommandService(
+    internal sealed class CommandService(
         ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db, IQueryCommand _qy, ILoadCommand _ld
         ) : ICommandService
     {

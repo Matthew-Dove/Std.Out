@@ -5,14 +5,14 @@ using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
-    public interface IDiskStorage
+    internal interface IDiskStorage
     {
         Task<Response<Unit>> Store(string path, CorrelationDto dto);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path);
         Task<Response<string[]>> Query(string path);
     }
 
-    public sealed class DiskStorage(
+    internal sealed class DiskStorage(
         ILogger<DiskStorage> _log
         ) : IDiskStorage
     {

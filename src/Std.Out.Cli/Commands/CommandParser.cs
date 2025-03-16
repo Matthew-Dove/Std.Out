@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace Std.Out.Cli.Commands;
 
-public interface ICommandParser
+internal interface ICommandParser
 {
     Response<CommandModel> Parse(string[] args);
 }
 
-public sealed class CommandParser : ICommandParser
+internal sealed class CommandParser : ICommandParser
 {
     public Response<CommandModel> Parse(string[] args)
     {

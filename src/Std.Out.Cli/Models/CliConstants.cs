@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Cli.Models
 {
-    public sealed class CliConstants
+    internal sealed class CliConstants
     {
         /// <summary>
         /// The mask for the correlation Id; used as part of the S3 key path, or as part of an index's pk / sk value.

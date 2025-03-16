@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Core.Models.Config
 {
-    public sealed class DynamodbConfig
+    internal sealed class DynamodbConfig
     {
         public const string SECTION_NAME = "DynamoDb";
 
@@ -8,7 +8,7 @@
         public DynamodbSourceModel Defaults { get; set; }
     }
 
-    public sealed class DynamodbSourceModel
+    internal sealed class DynamodbSourceModel
     {
         public DisplayType Display { get; set; }
         public string TableName { get; set; }

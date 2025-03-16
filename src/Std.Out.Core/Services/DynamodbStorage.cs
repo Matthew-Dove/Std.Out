@@ -6,14 +6,14 @@ using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
-    public interface IDynamodbStorage
+    internal interface IDynamodbStorage
     {
         Task<Response<Unit>> Store(string path, string actionPath, CorrelationDto dto, string table, string partitionKeyName, string sortKeyName, string timeToLiveName, int timeToLiveHours);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string actionPath, string table, string partitionKeyName, string sortKeyName);
         Task<Response<string[]>> Query(string path, string table, string partitionKeyName, string sortKeyName);
     }
 
-    public sealed class DynamodbStorage(
+    internal sealed class DynamodbStorage(
         ILogger<DynamodbStorage> _log, IDynamodbService _db
         ) : IDynamodbStorage
     {

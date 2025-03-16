@@ -6,7 +6,7 @@ using Tests.Std.Out.Config;
 
 namespace Tests.Std.Out
 {
-    public class StdOutTests
+    public sealed class StdOutTests
     {
         private readonly IStdOut _std;
 

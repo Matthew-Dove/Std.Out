@@ -23,7 +23,7 @@
 		<RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>aws;cloudwatch;logs;</PackageTags>
-		<PackageReleaseNotes>Surfacing all nuget packages of referenced dlls.</PackageReleaseNotes>
+		<PackageReleaseNotes>Made all types internal, not related to the IStdOut interface, option models, or DI extension methods.</PackageReleaseNotes>
 		<PackageOutputPath>..\..\nupkg</PackageOutputPath>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<IncludeSymbols>True</IncludeSymbols>
@@ -60,9 +60,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
-		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.410" />
-		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406" />
-		<PackageReference Include="AWSSDK.S3" Version="3.7.415.17" />
+		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.410.1" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406.1" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.415.18" />
 		<PackageReference Include="FrameworkContainers" Version="4.2.0" />
 	</ItemGroup>
 

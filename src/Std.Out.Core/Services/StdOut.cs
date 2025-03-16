@@ -78,7 +78,7 @@ namespace Std.Out.Core.Services
         Task<Response<StorageKey[]>> Query(StorageKey key, StdConfig config);
     }
 
-    public sealed class StdOut(
+    internal sealed class StdOut(
         ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, IOptions<StdConfigOptions> _options
         ) : IStdOut
     {

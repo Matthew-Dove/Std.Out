@@ -8,12 +8,12 @@ using Std.Out.Cli.Services;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface ILoadCommand
+    internal interface ILoadCommand
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class LoadCommand(
+    internal sealed class LoadCommand(
         IOptions<LoadConfig> _config, IStdOut _service, IDisplayService _display
         ) : ILoadCommand
     {

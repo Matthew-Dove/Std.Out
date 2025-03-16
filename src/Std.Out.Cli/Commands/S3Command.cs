@@ -8,12 +8,12 @@ using Std.Out.Core.Services;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface IS3Command
+    internal interface IS3Command
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class S3Command(
+    internal sealed class S3Command(
         IOptions<S3Config> _config, IS3Service _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IS3Command
     {

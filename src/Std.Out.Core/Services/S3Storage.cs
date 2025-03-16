@@ -6,14 +6,14 @@ using System.Text.Json;
 
 namespace Std.Out.Core.Services
 {
-    public interface IS3Storage
+    internal interface IS3Storage
     {
         Task<Response<Unit>> Store(string path, CorrelationDto dto, string bucket, bool purgeObjectVersions);
         Task<Response<Either<CorrelationDto, NotFound>>> Load(string path, string bucket);
         Task<Response<string[]>> Query(string path, string bucket);
     }
 
-    public sealed class S3Storage(
+    internal sealed class S3Storage(
         ILogger<S3Storage> _log, IS3Service _s3
         ) : IS3Storage
     {

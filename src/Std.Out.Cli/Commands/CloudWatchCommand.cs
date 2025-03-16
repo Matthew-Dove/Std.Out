@@ -8,12 +8,12 @@ using Std.Out.Core.Services;
 
 namespace Std.Out.Cli.Commands
 {
-    public interface ICloudWatchCommand
+    internal interface ICloudWatchCommand
     {
         Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command);
     }
 
-    public sealed class CloudWatchCommand(
+    internal sealed class CloudWatchCommand(
         IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
         ) : ICloudWatchCommand
     {
