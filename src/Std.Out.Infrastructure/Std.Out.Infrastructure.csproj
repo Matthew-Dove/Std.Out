@@ -35,4 +35,16 @@
 		</ItemGroup>
 	</Target>
 
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Std.Out.Core</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Std.Out.Cli</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 </Project>

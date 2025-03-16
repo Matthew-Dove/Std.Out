@@ -6,7 +6,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Std.Out.Cli.Commands;
 using Std.Out.Cli.Models;
+using Std.Out.Cli.Services;
 using Std.Out.Core.Models.Config;
+using Std.Out.Core.Services;
+using Std.Out.Infrastructure;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -66,7 +69,24 @@ namespace Std.Out.Cli
             builder.Services.Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME));
             builder.Services.Configure<LoadConfig>(builder.Configuration.GetSection(LoadConfig.SECTION_NAME));
 
-            builder.Services.AddServicesByConvention("Std.Out.Cli", false, "Std.Out", "Std.Out.Core", "Std.Out.Infrastructure");
+            builder.Services
+                .AddSingleton<IMarker, Marker>()
+                .AddSingleton<ICommandService, CommandService>()
+                .AddSingleton<ICommandParser, CommandParser>()
+                .AddSingleton<ICloudWatchCommand, CloudWatchCommand>()
+                .AddSingleton<ICloudWatchService, CloudWatchService>()
+                .AddSingleton<IDisplayService, DisplayService>()
+                .AddSingleton<IStdOut, StdOut>()
+                .AddSingleton<IDiskStorage, DiskStorage>()
+                .AddSingleton<IS3Storage, S3Storage>()
+                .AddSingleton<IS3Service, S3Service>()
+                .AddSingleton<IDynamodbStorage, DynamodbStorage>()
+                .AddSingleton<IDynamodbService, DynamodbService>()
+                .AddSingleton<IS3Command, S3Command>()
+                .AddSingleton<IDynamodbCommand, DynamodbCommand>()
+                .AddSingleton<IQueryCommand, QueryCommand>()
+                .AddSingleton<ILoadCommand, LoadCommand>()
+                ;
 
             if (noLog) builder.Logging.ClearProviders();
             var host = builder.Build();

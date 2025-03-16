@@ -1,5 +1,6 @@
 ﻿using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
+using Std.Out.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -11,8 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options != null) services.Configure(options);
 
             return services
-                .AddSingleton<Std.Out.Infrastructure.IMarker, Std.Out.Infrastructure.Marker>()
-                .AddSingleton<Std.Out.Core.IMarker, Std.Out.Core.Marker>()
+                .AddSingleton<IMarker, Marker>()
                 .AddSingleton<IStdOut, StdOut>()
                 .AddSingleton<IDiskStorage, DiskStorage>()
                 .AddSingleton<IS3Storage, S3Storage>()

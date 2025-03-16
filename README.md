@@ -459,3 +459,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Fixed nuget package source issues, that were treating internal projects / class libraries as external packages.
 * Surfaced all nuget packages of referenced dlls.
+
+# 2.1.6
+
+* Moved stdout dependency injection extensions down to the core layer, to keep the nuget packages in one place; avoiding duplications.

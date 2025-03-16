@@ -7,7 +7,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Title>Standard Output</Title>
 		<PackageId>md.stdout</PackageId>
-		<Version>2.1.6</Version>
+		<Version>2.1.7</Version>
 		<Authors>Matthew Dove</Authors>
 		<Description>
 			Captures output of a program to assist with debugging.
@@ -28,6 +28,9 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.xml;.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	</PropertyGroup>
@@ -56,7 +59,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
 		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.410" />
 		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406" />
