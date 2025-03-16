@@ -318,12 +318,15 @@ Since `md.stdout` is a package in *your* program, you're free to add the setting
 The package won't read directly from any configuration source.  
 You can either pass the config model directly as an overload option on the `IStdOut` methods, or use the dependency injection extension method (*below*):
 ```cs
-// Load both: "Sources", and "Key" using the configuration builder:
-var options = new StdConfigOptions();
-Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
+// Use one provided by a framework (asp.net), or create your own application; or web builder.
+var builder = Host.CreateApplicationBuilder();
 
-// Provide the config values to StdOut:
-services
+// Load both: "Sources", and "Key" using the configuration builder.
+var options = new StdConfigOptions();
+builder.Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
+
+// Provide the config values to StdOut.
+builder.Services
 .AddStdOutServices(
     opt => {
         opt.Sources = options.Sources;
@@ -331,11 +334,9 @@ services
     }
 );
 
-// Alternatively skip the config step, but still call StdOut for service injection:
-services.AddStdOutServices();
-
-// Add logging:
-Build().Services.AddContainerExpressionsLogging();
+var host = builder.Build();
+host.Services.AddContainerExpressionsLogging();
+var stdout = host.Services.GetRequiredService<IStdOut>();
 ```
 
 ```json
@@ -454,6 +455,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 * Breaking change on the `IStdOut` interface, as the argument orders have been swapped around for consistency.
 * Breaking change on some service, and model namespaces; as they moved class libraries; in order to be re-used by the CLI app.
 
-## 2.1.1
+## 2.1.1 - 2.1.5
 
 * Fixed nuget package source issues, that were treating internal projects / class libraries as external packages.
+* Surfaced all nuget packages of referenced dlls.

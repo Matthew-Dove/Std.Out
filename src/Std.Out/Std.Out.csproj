@@ -1,84 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Title>Standard Output</Title>
-    <PackageId>md.stdout</PackageId>
-    <Version>2.1.1</Version>
-    <Authors>Matthew Dove</Authors>
-    <Description>Captures output of a program to assist with debugging.
-This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Title>Standard Output</Title>
+		<PackageId>md.stdout</PackageId>
+		<Version>2.1.6</Version>
+		<Authors>Matthew Dove</Authors>
+		<Description>
+			Captures output of a program to assist with debugging.
+			This project is tailored towards AWS services, and is not suitable for general purpose diagnostics.
 
-Loads logs from services via a shared Correlation Id.
-Can pull data from CloudWatch, S3, and DynamoDB.</Description>
-    <Copyright>Matthew Dove. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/Matthew-Dove/Std.Out</PackageProjectUrl>
-    <PackageIcon>dove.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Included reference projects in the pack command, so they aren't treated as external nuget sources.</PackageReleaseNotes>
-    <PackageOutputPath>..\..\nupkg</PackageOutputPath>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	<TargetsForTfmSpecificBuildOutput>
-		$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
-	</TargetsForTfmSpecificBuildOutput>
-	  <AllowedOutputExtensionsInPackageBuildOutputFolder>
-		  $(AllowedOutputExtensionsInPackageBuildOutputFolder);.xml
-		  $(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb
-	  </AllowedOutputExtensionsInPackageBuildOutputFolder>
-  </PropertyGroup>
+			Loads logs from services via a shared Correlation Id.
+			Can pull data from CloudWatch, S3, and DynamoDB.
+		</Description>
+		<Copyright>Matthew Dove. All rights reserved.</Copyright>
+		<PackageProjectUrl>https://github.com/Matthew-Dove/Std.Out</PackageProjectUrl>
+		<PackageIcon>dove.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>aws;cloudwatch;logs;</PackageTags>
+		<PackageReleaseNotes>Surfacing all nuget packages of referenced dlls.</PackageReleaseNotes>
+		<PackageOutputPath>..\..\nupkg</PackageOutputPath>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.xml;.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702;1591</NoWarn>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn>1701;1702;1591</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\assets\dove.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\assets\dove.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
+		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.7.410" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.415.17" />
+		<PackageReference Include="FrameworkContainers" Version="4.2.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-	  <ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj">
-		  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-		  <IncludeAssets>Std.Out.Core.dll</IncludeAssets>
-	  </ProjectReference>
-	  <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj">
-		  <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-		  <IncludeAssets>Std.Out.Infrastructure.dll</IncludeAssets>
-	  </ProjectReference>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" PrivateAssets="All" />
+		<ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" PrivateAssets="All" />
+	</ItemGroup>
 
-	<Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+	<Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
 		<ItemGroup>
 			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.xml'))" />
-			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.pdb'))" />
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.xml'))" Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;Replace('.dll', '.pdb'))" Condition="Exists('%(RootDir)%(Directory)%(Filename).pdb')" />
 		</ItemGroup>
 	</Target>
 

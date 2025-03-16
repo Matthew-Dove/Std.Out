@@ -19,4 +19,16 @@
     <ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" />
   </ItemGroup>
 
+	<Target Name="GetTargetFrameworks" Returns="@(TargetFrameworks)">
+		<ItemGroup>
+			<TargetFrameworks Include="$(TargetFramework)" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="GetPackageReferences" Returns="@(PackageReferences)">
+		<ItemGroup>
+			<PackageReferences Include="@(PackageReference)" />
+		</ItemGroup>
+	</Target>
+
 </Project>

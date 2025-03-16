@@ -23,4 +23,16 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
   </ItemGroup>
 
+	<Target Name="GetTargetFrameworks" Returns="@(TargetFrameworks)">
+		<ItemGroup>
+			<TargetFrameworks Include="$(TargetFramework)" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="GetPackageReferences" Returns="@(PackageReferences)">
+		<ItemGroup>
+			<PackageReferences Include="@(PackageReference)" />
+		</ItemGroup>
+	</Target>
+
 </Project>
