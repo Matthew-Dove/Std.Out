@@ -27,7 +27,7 @@
         public string ActionSettingsKey { get; set; }
     }
 
-    internal sealed class Verb
+    internal sealed class VerbCli
     {
         public const string CloudWatch = "cloudwatch";
         public const string S3 = "s3";
@@ -36,7 +36,7 @@
         public const string Query = "query";
     }
 
-    internal static class Option
+    internal static class OptionCli
     {
         public const string Key = "--key";
         public const string K = "-k";
@@ -60,7 +60,7 @@
         public const string Ak = "-ak";
     }
 
-    internal static class Flag
+    internal static class FlagCli
     {
         public const string NoLog = "--nolog";
         public const string Nl = "-nl";

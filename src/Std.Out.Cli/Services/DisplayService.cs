@@ -58,7 +58,7 @@ namespace Std.Out.Cli.Services
             {
                 DisplayType.Chrome => $"start chrome '{data}'",
                 DisplayType.Firefox => $"start firefox '{data}'",
-                _ => Lambda.Identity<string>(new ArgumentOutOfRangeException(nameof(S3SourceModel.Display), $"Value must be one of: '{string.Join(", ", Enum.GetNames<DisplayType>().Where(x => x != DisplayType.NotSet.ToString()))}'."))
+                _ => Lambda.Throw<string>(new ArgumentOutOfRangeException(nameof(S3SourceModel.Display), $"Value must be one of: '{string.Join(", ", Enum.GetNames<DisplayType>().Where(x => x != DisplayType.NotSet.ToString()))}'."))
             };
 
             return RunCli(processArgs);

@@ -166,7 +166,7 @@ namespace Std.Out.Core.Services
             var oldVersions = new List<KeyVersion>();
             foreach (var version in allVersions.Versions)
             {
-                if (!version.IsLatest)
+                if (!version.IsLatest.GetValueOrDefault(false))
                 {
                     oldVersions.Add(new KeyVersion { Key = key, VersionId = version.VersionId });
                 }
