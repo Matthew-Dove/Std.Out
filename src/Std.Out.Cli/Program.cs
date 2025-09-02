@@ -75,7 +75,7 @@ namespace Std.Out.Cli
                 .AddSingleton<ICommandParser, CommandParser>()
                 .AddSingleton<ICloudWatchCommand, CloudWatchCommand>()
                 .AddSingleton<ICloudWatchService, CloudWatchService>()
-                .AddSingleton<IDisplayService, DisplayService>()
+                .AddSingleton<IDisplayService, Displayer>()
                 .AddSingleton<IStdOut, StdOut>()
                 .AddSingleton<IDiskStorage, DiskStorage>()
                 .AddSingleton<IS3Storage, S3Storage>()

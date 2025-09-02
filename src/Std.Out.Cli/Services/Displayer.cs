@@ -11,7 +11,7 @@ namespace Std.Out.Cli.Services
         Response<Unit> Show(DisplayType browser, string heading, string body);
     }
 
-    internal sealed class DisplayService : IDisplayService
+    internal sealed class Displayer : IDisplayService
     {
         public Response<Unit> Show(DisplayType display, string heading, string body)
         {

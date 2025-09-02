@@ -21,6 +21,7 @@
     <PackageReference Include="AWSSDK.S3" Version="4.0.6.12" />
     <PackageReference Include="FrameworkContainers" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8" />
+	<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
   </ItemGroup>
 
 	<Target Name="GetTargetFrameworks" Returns="@(TargetFrameworks)">
@@ -44,6 +45,12 @@
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 			<_Parameter1>Std.Out.Cli</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Std.Out</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
 

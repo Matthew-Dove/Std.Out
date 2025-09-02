@@ -64,9 +64,11 @@
 		<PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.6.1" />
 		<PackageReference Include="AWSSDK.S3" Version="4.0.6.12" />
 		<PackageReference Include="FrameworkContainers" Version="7.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Std.Out.Cli\Std.Out.Cli.csproj" />
 		<ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" PrivateAssets="All" />
 		<ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" PrivateAssets="All" />
 	</ItemGroup>
