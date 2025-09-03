@@ -440,6 +440,10 @@ If you only want a particular source to say: read, and query, but **not** to sto
 * Added Load as a CLI option. Load gets a specific correlation Id from an action, given a: application, stage, and user.
 * Stage, and user parameters are optional for Load, and Query.
 
+## 2.2.0
+
+* Updated nuget packages.
+
 # Package Changelog
 
 ## 1.0.0
@@ -467,3 +471,8 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.1.7
 
 * Made all types internal, not related to the IStdOut interface, option models, or DI extension methods.
+
+# 2.2.0
+
+* Updated nuget packages.
+* Added a path to the CLI though the stdout nuget package: `services.AddStdCliServices(...)` - then inject the `IStdCli` service.
