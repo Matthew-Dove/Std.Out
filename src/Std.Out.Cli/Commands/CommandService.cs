@@ -32,13 +32,13 @@ namespace Std.Out.Cli.Commands
             {
                 response = await _db.Execute(command);
             }
-            else if (VerbCli.Query.Equals(command.Verb))
-            {
-                response = await _qy.Execute(command);
-            }
             else if (VerbCli.Load.Equals(command.Verb))
             {
                 response = await _ld.Execute(command);
+            }
+            else if (VerbCli.Query.Equals(command.Verb))
+            {
+                response = await _qy.Execute(command);
             }
 
             return response;

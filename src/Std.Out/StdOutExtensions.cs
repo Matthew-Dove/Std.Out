@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Std.Out.Cli.Commands;
 using Std.Out.Cli.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 using Std.Out.Infrastructure;
 using Std.Out.Services;
+using System.ComponentModel;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -20,6 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (options != null) services.Configure(options);
 
+            // Services for stdout's nuget package.
             return services
                 .AddSingleton<IMarker, Marker>()
                 .AddSingleton<IStdOut, StdOut>()
@@ -32,28 +34,42 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>Adds stdout services to the host's DI container, sets up stdout's config; and the CLI's config (when provided).</summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static IServiceCollection AddStdCliServices(
             this IServiceCollection services,
             Action<StdConfigOptions> options = null,
             Action<CloudWatchConfig> cw = null,
             Action<S3Config> s3 = null,
-            Action<DynamodbConfig> ddb = null,
+            Action<DynamodbConfig> db = null,
             Action<LoadConfig> load = null
             )
         {
             if (cw != null) services.Configure(cw);
             if (s3 != null) services.Configure(s3);
-            if (ddb != null) services.Configure(ddb);
+            if (db != null) services.Configure(db);
             if (load != null) services.Configure(load);
 
+            // Services for stdout's nuget package.
             services = services
                 .AddStdOutServices(options)
-                .AddSingleton<IStdCli, StdCli>()
+                .AddSingleton<ICloudWatchService, CloudWatchService>()
                 ;
 
-            // Swap out the display service from the CLI, with an implementation that collects the view data.
+            // Services for stdout's cli.
+            services = services
+                .AddScoped<ICommandService, CommandService>()
+                .AddScoped<ICommandParser, CommandParser>()
+                .AddScoped<ICloudWatchCommand, CloudWatchCommand>()
+                .AddScoped<IS3Command, S3Command>()
+                .AddScoped<IDynamodbCommand, DynamodbCommand>()
+                .AddScoped<IQueryCommand, QueryCommand>()
+                .AddScoped<ILoadCommand, LoadCommand>()
+                ;
+
+            // Services for the stdout nuget package to interact with the cli.
             services
-                .RemoveAll<IDisplayService>()
+                .AddScoped<IStdCli, StdCli>()
+                .AddScoped<ICollectorService, CollectorService>()
                 .AddScoped<IDisplayService, Collector>()
                 ;
 

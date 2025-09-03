@@ -4,15 +4,26 @@ using Std.Out.Core.Models;
 
 namespace Std.Out.Services
 {
-    internal interface ICollectorService : IDisplayService
+    internal interface ICollectorService
     {
         Display[] Collect();
     }
 
-    internal sealed class Collector : ICollectorService
+    internal sealed class CollectorService(IDisplayService _display) : ICollectorService
+    {
+        public Display[] Collect()
+        {
+            if (_display is Collector collector)
+            {
+                return collector.Collect();
+            }
+            return Array.Empty<Display>();
+        }
+    }
+
+    internal sealed class Collector : IDisplayService
     {
         private readonly Queue<Display> _viewData = new();
-        private readonly Guid _id = Guid.NewGuid(); // TODO: Remove this, it's just for debugging.
 
         public Response<Unit> Show(DisplayType _, string heading, string body)
         {

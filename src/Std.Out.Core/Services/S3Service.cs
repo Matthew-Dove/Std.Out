@@ -32,7 +32,7 @@ namespace Std.Out.Core.Services
                 var result = await _client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = source.Bucket, Prefix = source.Prefix, MaxKeys = CoreConstants.MaxLimit });
                 if (result.HttpStatusCode == HttpStatusCode.OK)
                 {
-                    var filter = result.S3Objects.Where(x => source.Files.Length == 0 || source.Files.FirstOrDefault(y => x.Key.EndsWith(y, StringComparison.OrdinalIgnoreCase)) != default);
+                    var filter = (result.S3Objects ?? []).Where(x => source.Files.Length == 0 || source.Files.FirstOrDefault(y => x.Key.EndsWith(y, StringComparison.OrdinalIgnoreCase)) != default);
                     var filenames = filter.Select(x => x.Key).ToArray();
                     response = response.With(filenames);
                 }
