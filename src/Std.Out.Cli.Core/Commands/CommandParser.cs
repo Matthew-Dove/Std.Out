@@ -1,8 +1,8 @@
 ﻿using ContainerExpressions.Containers;
-using Std.Out.Cli.Models;
+using Std.Out.Cli.Core.Models;
 using System.Reflection;
 
-namespace Std.Out.Cli.Commands;
+namespace Std.Out.Cli.Core.Commands;
 
 internal interface ICommandParser
 {

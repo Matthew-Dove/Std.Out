@@ -1,4 +1,5 @@
 ﻿using ContainerExpressions.Containers;
+using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models;
 using Std.Out.Core.Models.Config;
 using System.Diagnostics;
@@ -6,11 +7,6 @@ using System.Net;
 
 namespace Std.Out.Cli.Services
 {
-    internal interface IDisplayService
-    {
-        Response<Unit> Show(DisplayType browser, string heading, string body);
-    }
-
     internal sealed class Displayer : IDisplayService
     {
         public Response<Unit> Show(DisplayType display, string heading, string body)

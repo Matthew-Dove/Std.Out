@@ -1,12 +1,12 @@
 ﻿using ContainerExpressions.Containers;
-using Std.Out.Cli.Models;
+using Std.Out.Cli.Core.Models;
+using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Models;
 using Microsoft.Extensions.Options;
 using Std.Out.Core.Services;
-using Std.Out.Cli.Services;
 
-namespace Std.Out.Cli.Commands
+namespace Std.Out.Cli.Core.Commands
 {
     internal interface ILoadCommand
     {

@@ -1,7 +1,7 @@
 ﻿using ContainerExpressions.Containers;
-using Std.Out.Cli.Models;
+using Std.Out.Cli.Core.Models;
 
-namespace Std.Out.Cli.Commands
+namespace Std.Out.Cli.Core.Commands
 {
     internal interface ICommandService
     {

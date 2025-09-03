@@ -1,11 +1,11 @@
 ﻿using ContainerExpressions.Containers;
 using Microsoft.Extensions.Options;
-using Std.Out.Cli.Models;
-using Std.Out.Cli.Services;
+using Std.Out.Cli.Core.Models;
+using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 
-namespace Std.Out.Cli.Commands
+namespace Std.Out.Cli.Core.Commands
 {
     internal interface IQueryCommand
     {

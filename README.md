@@ -476,3 +476,11 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Updated nuget packages.
 * Added a path to the CLI though the stdout nuget package: `services.AddStdCliServices(...)` - then inject the `IStdCli` service.
+
+# 2.2.1
+
+* Move the CLI services into a core library, as the direct project reference was causing a nuget dependency on the dotnet tool (_which isn't valid_).
+
+# 2.2.2
+
+* Adding Std.Out.Cli.Core to the bin folder when packing, so it's not referenced as a nuget package.

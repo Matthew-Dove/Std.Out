@@ -1,4 +1,4 @@
-﻿namespace Std.Out.Cli.Models
+﻿namespace Std.Out.Cli.Core.Models
 {
     internal sealed class CliConstants
     {

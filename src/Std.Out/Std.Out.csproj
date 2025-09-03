@@ -7,7 +7,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Title>Standard Output</Title>
 		<PackageId>md.stdout</PackageId>
-		<Version>2.2.0</Version>
+		<Version>2.2.2</Version>
 		<Authors>Matthew Dove</Authors>
 		<Description>
 			Captures output of a program to assist with debugging.
@@ -68,7 +68,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Std.Out.Cli\Std.Out.Cli.csproj" />
+		<ProjectReference Include="..\Std.Out.Cli.Core\Std.Out.Cli.Core.csproj" PrivateAssets="All" />
 		<ProjectReference Include="..\Std.Out.Core\Std.Out.Core.csproj" PrivateAssets="All" />
 		<ProjectReference Include="..\Std.Out.Infrastructure\Std.Out.Infrastructure.csproj" PrivateAssets="All" />
 	</ItemGroup>

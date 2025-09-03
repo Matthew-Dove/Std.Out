@@ -1,5 +1,5 @@
-﻿using Std.Out.Cli.Commands;
-using Std.Out.Cli.Services;
+﻿using Std.Out.Cli.Core.Commands;
+using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
 using Std.Out.Infrastructure;
