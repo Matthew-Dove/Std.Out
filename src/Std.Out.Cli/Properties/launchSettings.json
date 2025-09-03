@@ -11,8 +11,8 @@
       "commandLineArgs": "db --key appname --action Tests.Std.Out.StdOutTests.Store --actionkey appname"
       //"commandLineArgs": "db --key appname -pk pk_value"
       //"commandLineArgs": "db --key appname -pk pk_value -sk sk_value"
-      //"commandLineArgs": "qy --key appname"
       //"commandLineArgs": "ld --key appname --action Tests.Std.Out.StdOutTests.Store"
+      //"commandLineArgs": "qy --key appname"
     }
   }
 }

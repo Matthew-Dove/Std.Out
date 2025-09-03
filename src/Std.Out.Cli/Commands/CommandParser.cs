@@ -23,9 +23,9 @@ internal sealed class CommandParser : ICommandParser
         switch (args[0].ToLowerInvariant())
         {
             case "cw":
-                key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-                cid = kv.GetOptions(Option.CorrelationId, Option.C);
-                action = kv.GetOptions(Option.Action, Option.A);
+                key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
+                cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
+                action = kv.GetOptions(OptionCli.Action, OptionCli.A);
 
                 /**
                  * Allowed option combos for CloudWatch:
@@ -43,7 +43,7 @@ internal sealed class CommandParser : ICommandParser
                 }
                 else if (!string.Empty.Equals(action))
                 {
-                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    actionKey = kv.GetOptions(OptionCli.ActionKey, OptionCli.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.ActionKey));
                     cid = string.Empty;
                     isValid = !string.Empty.Equals(actionKey);
                 }
@@ -51,7 +51,7 @@ internal sealed class CommandParser : ICommandParser
                 if (isValid && !string.Empty.Equals(key))
                 {
                     response = response.With(new CommandModel {
-                        Verb = Verb.CloudWatch,
+                        Verb = VerbCli.CloudWatch,
                         SettingsKey = key,
                         CorrelationId = cid,
                         Action = action,
@@ -61,11 +61,11 @@ internal sealed class CommandParser : ICommandParser
                 break;
 
             case "s3":
-                key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-                cid = kv.GetOptions(Option.CorrelationId, Option.C);
-                action = kv.GetOptions(Option.Action, Option.A);
+                key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
+                cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
+                action = kv.GetOptions(OptionCli.Action, OptionCli.A);
 
-                var path = kv.GetOptions(Option.Path, Option.P);
+                var path = kv.GetOptions(OptionCli.Path, OptionCli.P);
 
                 /**
                  * Allowed option combos for S3:
@@ -85,7 +85,7 @@ internal sealed class CommandParser : ICommandParser
                 }
                 else if (!string.Empty.Equals(action))
                 {
-                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    actionKey = kv.GetOptions(OptionCli.ActionKey, OptionCli.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.ActionKey));
                     cid = string.Empty;
                     path = string.Empty;
                     isValid = !string.Empty.Equals(actionKey);
@@ -101,7 +101,7 @@ internal sealed class CommandParser : ICommandParser
                 if (isValid && !string.Empty.Equals(key))
                 {
                     response = response.With(new CommandModel {
-                        Verb = Verb.S3,
+                        Verb = VerbCli.S3,
                         SettingsKey = key,
                         CorrelationId = cid,
                         Path = path,
@@ -112,12 +112,12 @@ internal sealed class CommandParser : ICommandParser
                 break;
 
             case "db":
-                key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-                cid = kv.GetOptions(Option.CorrelationId, Option.C);
-                action = kv.GetOptions(Option.Action, Option.A);
+                key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
+                cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
+                action = kv.GetOptions(OptionCli.Action, OptionCli.A);
 
-                var pk = kv.GetOptions(Option.PartitionKey, Option.Pk);
-                var sk = kv.GetOptions(Option.SortKey, Option.Sk);
+                var pk = kv.GetOptions(OptionCli.PartitionKey, OptionCli.Pk);
+                var sk = kv.GetOptions(OptionCli.SortKey, OptionCli.Sk);
 
                 /**
                  * Allowed option combos for DynamoDB:
@@ -139,7 +139,7 @@ internal sealed class CommandParser : ICommandParser
                 }
                 else if (!string.Empty.Equals(action))
                 {
-                    actionKey = kv.GetOptions(Option.ActionKey, Option.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.ActionKey));
+                    actionKey = kv.GetOptions(OptionCli.ActionKey, OptionCli.Ak).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.ActionKey));
                     cid = string.Empty;
                     pk = string.Empty;
                     sk = string.Empty;
@@ -164,7 +164,7 @@ internal sealed class CommandParser : ICommandParser
                 if (isValid && !string.Empty.Equals(key))
                 {
                     response = response.With(new CommandModel {
-                        Verb = Verb.DynamoDB,
+                        Verb = VerbCli.DynamoDB,
                         SettingsKey = key,
                         CorrelationId = cid,
                         PartitionKey = pk,
@@ -176,21 +176,21 @@ internal sealed class CommandParser : ICommandParser
                 break;
 
             case "ld":
-                key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
-                action = kv.GetOptions(Option.Action, Option.A).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Action));
+                key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
+                action = kv.GetOptions(OptionCli.Action, OptionCli.A).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Action));
 
                 if (!string.Empty.Equals(key) && !string.Empty.Equals(action))
                 {
-                    response = response.With(new CommandModel { Verb = Verb.Load, SettingsKey = key, Action = action });
+                    response = response.With(new CommandModel { Verb = VerbCli.Load, SettingsKey = key, Action = action });
                 }
                 break;
 
             case "qy":
-                key = kv.GetOptions(Option.Key, Option.K).LogWhenEmpty("Option {Option} is required.".WithArgs(Option.Key));
+                key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
 
                 if (!string.Empty.Equals(key))
                 {
-                    response = response.With(new CommandModel { Verb = Verb.Query, SettingsKey = key });
+                    response = response.With(new CommandModel { Verb = VerbCli.Query, SettingsKey = key });
                 }
                 break;
 
@@ -222,7 +222,7 @@ internal sealed class CommandParser : ICommandParser
 
 file static class CommandExtensions
 {
-    private static readonly string[] _flags = typeof(Flag)
+    private static readonly string[] _flags = typeof(FlagCli)
         .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
         .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
         .Select(fi => fi.GetValue(null).ToString().ToLowerInvariant())

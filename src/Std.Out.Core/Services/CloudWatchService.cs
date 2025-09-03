@@ -100,7 +100,7 @@ namespace Std.Out.Core.Services
 
                 if (queryResults.Status == QueryStatus.Complete)
                 {
-                    var groupedResults = queryResults.Results.GroupBy(ExtractLogGroupName);
+                    var groupedResults = (queryResults.Results ?? []).GroupBy(ExtractLogGroupName);
                     var result = new List<(LogGroup, string[])>();
 
                     foreach (var group in groupedResults)

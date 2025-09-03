@@ -53,7 +53,7 @@ namespace Std.Out.Cli
 
         private static IHost BuildHost(string[] args)
         {
-            var noLog = args.FirstOrDefault(static x => Flag.NoLog.Equals(x, StringComparison.OrdinalIgnoreCase) || Flag.Nl.Equals(x, StringComparison.OrdinalIgnoreCase)) is not null;
+            var noLog = args.FirstOrDefault(static x => FlagCli.NoLog.Equals(x, StringComparison.OrdinalIgnoreCase) || FlagCli.Nl.Equals(x, StringComparison.OrdinalIgnoreCase)) is not null;
             var root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = args, ContentRootPath = root });
 
@@ -75,7 +75,7 @@ namespace Std.Out.Cli
                 .AddSingleton<ICommandParser, CommandParser>()
                 .AddSingleton<ICloudWatchCommand, CloudWatchCommand>()
                 .AddSingleton<ICloudWatchService, CloudWatchService>()
-                .AddSingleton<IDisplayService, DisplayService>()
+                .AddSingleton<IDisplayService, Displayer>()
                 .AddSingleton<IStdOut, StdOut>()
                 .AddSingleton<IDiskStorage, DiskStorage>()
                 .AddSingleton<IS3Storage, S3Storage>()

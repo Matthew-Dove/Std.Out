@@ -1,6 +1,6 @@
 ﻿namespace Std.Out.Core.Models.Config
 {
-    internal sealed class CloudWatchConfig
+    public sealed class CloudWatchConfig
     {
         public const string SECTION_NAME = "CloudWatch";
 
@@ -8,7 +8,7 @@
         public CloudWatchSourceModel Defaults { get; set; }
     }
 
-    internal sealed class CloudWatchSourceModel
+    public sealed class CloudWatchSourceModel
     {
         public DisplayType Display { get; set; }
         public string[] LogGroups { get; set; }
@@ -20,7 +20,7 @@
         public FilterModel[] Filters { get; set; }
     }
 
-    internal sealed class FilterModel
+    public sealed class FilterModel
     {
         public string Field { get; set; }
         public string Value { get; set; }

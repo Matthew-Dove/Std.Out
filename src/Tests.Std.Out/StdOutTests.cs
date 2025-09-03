@@ -20,7 +20,7 @@ namespace Tests.Std.Out
             var key = DI.Get<IOptions<StorageKeyConfig>>().Value;
 
             _key = StorageKey.CreateWithEnvironment(key.Application, key.Environment, (key.Namespace, key.Offset.GetValueOrDefault(0)));
-            _cid = Guid.NewGuid().ToString();
+            _cid = "c6b8c804-34cb-4cf7-b762-d24b644831e9";
         }
 
         [Fact]

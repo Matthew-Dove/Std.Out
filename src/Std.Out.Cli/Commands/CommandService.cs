@@ -20,25 +20,25 @@ namespace Std.Out.Cli.Commands
             if (!cmd) return response.With(new BadRequest());
             var command = cmd.Value;
 
-            if (Verb.CloudWatch.Equals(command.Verb))
+            if (VerbCli.CloudWatch.Equals(command.Verb))
             {
                 response = await _cw.Execute(command);
             }
-            else if (Verb.S3.Equals(command.Verb))
+            else if (VerbCli.S3.Equals(command.Verb))
             {
                 response = await _s3.Execute(command);
             }
-            else if (Verb.DynamoDB.Equals(command.Verb))
+            else if (VerbCli.DynamoDB.Equals(command.Verb))
             {
                 response = await _db.Execute(command);
             }
-            else if (Verb.Query.Equals(command.Verb))
-            {
-                response = await _qy.Execute(command);
-            }
-            else if (Verb.Load.Equals(command.Verb))
+            else if (VerbCli.Load.Equals(command.Verb))
             {
                 response = await _ld.Execute(command);
+            }
+            else if (VerbCli.Query.Equals(command.Verb))
+            {
+                response = await _qy.Execute(command);
             }
 
             return response;

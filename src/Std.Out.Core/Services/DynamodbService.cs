@@ -64,7 +64,7 @@ namespace Std.Out.Core.Services
 
                 if (queryResponse.HttpStatusCode == HttpStatusCode.OK)
                 {
-                    var result = queryResponse.Items.Select(Document.FromAttributeMap).Select(x => x.ToJsonPretty()).ToArray();
+                    var result = (queryResponse.Items ?? []).Select(Document.FromAttributeMap).Select(x => x.ToJsonPretty()).ToArray();
                     response = response.With(result);
                 }
                 else
@@ -122,7 +122,7 @@ namespace Std.Out.Core.Services
                 if (queryResponse.HttpStatusCode == HttpStatusCode.OK)
                 {
                     response = response.With(Array.Empty<string>());
-                    if (queryResponse.Items.Count == 1)
+                    if ((queryResponse.Items?.Count ?? 0) == 1)
                     {
                         var item = queryResponse.Items[0];
                         var pk = item[source.PartitionKeyName].S;
@@ -171,7 +171,7 @@ namespace Std.Out.Core.Services
 
                 if (queryResponse.HttpStatusCode == HttpStatusCode.OK)
                 {
-                    var result = queryResponse.Items.Select(x => x[sortKeyName].S).ToArray();
+                    var result = (queryResponse.Items ?? []).Select(x => x[sortKeyName].S).ToArray();
                     response = response.With(result);
                 }
                 else
@@ -245,7 +245,7 @@ namespace Std.Out.Core.Services
 
                 if (getResponse.HttpStatusCode == HttpStatusCode.OK)
                 {
-                    if (getResponse.Item.Count == 0) response = response.With(new NotFound());
+                    if ((getResponse.Item?.Count ?? 0) == 0) response = response.With(new NotFound());
                     else
                     {
                         var json = Document.FromAttributeMap(getResponse.Item).ToJson();
