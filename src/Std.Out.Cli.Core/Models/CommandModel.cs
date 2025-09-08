@@ -25,6 +25,9 @@
 
         /// <summary>The key to use when loading the action, in order to get the correlation Id.</summary>
         public string ActionSettingsKey { get; set; }
+
+        /// <summary>Proxy the CLI command to another instance over http (i.e. when you don't have access to the data sources locally).</summary>
+        public bool IsProxy { get; set; }
     }
 
     internal sealed class VerbCli

@@ -9,7 +9,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class CommandService(
-        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db, IQueryCommand _qy, ILoadCommand _ld
+        ICommandParser _parser, ICloudWatchCommand _cw, IS3Command _s3, IDynamodbCommand _db, IQueryCommand _qy, ILoadCommand _ld, IProxyCommand _px
         ) : ICommandService
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(string[] args)
@@ -20,7 +20,11 @@ namespace Std.Out.Cli.Core.Commands
             if (!cmd) return response.With(new BadRequest());
             var command = cmd.Value;
 
-            if (VerbCli.CloudWatch.Equals(command.Verb))
+            if (command.IsProxy)
+            {
+                response = await _px.Execute(command, string.Join(' ', args[1..]));
+            }
+            else if (VerbCli.CloudWatch.Equals(command.Verb))
             {
                 response = await _cw.Execute(command);
             }

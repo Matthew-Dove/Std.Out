@@ -1,5 +1,6 @@
 ﻿using ContainerExpressions.Containers;
 using FrameworkContainers.Infrastructure;
+using FrameworkContainers.Network.HttpCollective;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -69,6 +70,7 @@ namespace Std.Out.Cli
             builder.Services.Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME));
             builder.Services.Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME));
             builder.Services.Configure<LoadConfig>(builder.Configuration.GetSection(LoadConfig.SECTION_NAME));
+            builder.Services.Configure<ProxyConfig>(builder.Configuration.GetSection(ProxyConfig.SECTION_NAME));
 
             builder.Services
                 .AddSingleton<IMarker, Marker>()
@@ -87,6 +89,8 @@ namespace Std.Out.Cli
                 .AddSingleton<IDynamodbCommand, DynamodbCommand>()
                 .AddSingleton<IQueryCommand, QueryCommand>()
                 .AddSingleton<ILoadCommand, LoadCommand>()
+                .AddSingleton<IProxyCommand, ProxyCommand>()
+                .AddSingleton(typeof(IHttpResponse<>), typeof(HttpResponse<>))
                 ;
 
             if (noLog) builder.Logging.ClearProviders();

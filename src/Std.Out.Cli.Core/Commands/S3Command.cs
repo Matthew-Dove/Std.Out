@@ -83,14 +83,14 @@ namespace Std.Out.Cli.Core.Commands
             isValid = isValid && !string.IsNullOrWhiteSpace(model.Bucket);
             isValid = isValid && string.IsNullOrWhiteSpace(model.ContentType) || "json".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase) || "text".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase);
             isValid = isValid && ((!string.IsNullOrWhiteSpace(model.Prefix) && model.Prefix.Contains(CliConstants.CidMask)) || !string.Empty.Equals(path));
-            isValid = isValid && ((source.Files == null || source.Files.Length == 0) || source.Files.Count(string.IsNullOrWhiteSpace) == 0);
+            isValid = isValid && ((model.Files == null || model.Files.Length == 0) || model.Files.Count(string.IsNullOrWhiteSpace) == 0);
 
             if (isValid)
             {
                 // Align optional fields.
                 if (model.Display == DisplayType.NotSet) model.Display = DisplayType.Chrome;
                 if (string.IsNullOrWhiteSpace(model.ContentType)) model.ContentType = string.Empty;
-                if (source.Files == null || source.Files.Length == 0) model.Files = Array.Empty<string>();
+                if (model.Files == null || model.Files.Length == 0) model.Files = Array.Empty<string>();
 
                 model.ContentType = model.ContentType.ToLowerInvariant();
                 if (path != string.Empty) model.Prefix = path;

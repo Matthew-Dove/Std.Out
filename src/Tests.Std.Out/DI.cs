@@ -72,7 +72,6 @@ namespace Tests.Std.Out
             builder.Configuration.GetSection(StdConfigOptions.SECTION_NAME).Bind(options);
 
             builder.Services
-                .Configure<StorageKeyConfig>(builder.Configuration.GetSection(StorageKeyConfig.SECTION_NAME))
                 .Configure<CloudWatchConfig>(builder.Configuration.GetSection($"StdCli:{CloudWatchConfig.SECTION_NAME}"))
                 .Configure<S3Config>(builder.Configuration.GetSection($"StdCli:{S3Config.SECTION_NAME}"))
                 .Configure<DynamodbConfig>(builder.Configuration.GetSection($"StdCli:{DynamodbConfig.SECTION_NAME}"))

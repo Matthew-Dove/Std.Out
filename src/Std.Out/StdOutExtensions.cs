@@ -1,4 +1,5 @@
-﻿using Std.Out.Cli.Core.Commands;
+﻿using FrameworkContainers.Network.HttpCollective;
+using Std.Out.Cli.Core.Commands;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
@@ -53,6 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services = services
                 .AddStdOutServices(options)
                 .AddSingleton<ICloudWatchService, CloudWatchService>()
+                .AddSingleton(typeof(IHttpResponse<>), typeof(HttpResponse<>))
                 ;
 
             // Services for stdout's cli.
@@ -64,6 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<IDynamodbCommand, DynamodbCommand>()
                 .AddScoped<IQueryCommand, QueryCommand>()
                 .AddScoped<ILoadCommand, LoadCommand>()
+                .AddScoped<IProxyCommand, ProxyCommand>()
                 ;
 
             // Services for the stdout nuget package to interact with the cli.
