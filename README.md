@@ -493,3 +493,6 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Changing the IOptions to inject the raw object models, instead of using the options pattern.
 
+# 2.2.5
+
+* Setting scoped IOptionsSnapshot for config.

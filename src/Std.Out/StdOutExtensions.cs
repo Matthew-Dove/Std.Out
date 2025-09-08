@@ -55,11 +55,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (load != null) services.Configure(load);
             if (proxy != null) services.Configure(proxy);
 
-            services.AddSingleton(sp => sp.GetService<IOptions<CloudWatchConfig>>()?.Value ?? new CloudWatchConfig());
-            services.AddSingleton(sp => sp.GetService<IOptions<S3Config>>()?.Value ?? new S3Config());
-            services.AddSingleton(sp => sp.GetService<IOptions<DynamodbConfig>>()?.Value ?? new DynamodbConfig());
-            services.AddSingleton(sp => sp.GetService<IOptions<LoadConfig>>()?.Value ?? new LoadConfig());
-            services.AddSingleton(sp => sp.GetService<IOptions<ProxyConfig>>()?.Value ?? new ProxyConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<CloudWatchConfig>>()?.Value ?? new CloudWatchConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<S3Config>>()?.Value ?? new S3Config());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<DynamodbConfig>>()?.Value ?? new DynamodbConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<LoadConfig>>()?.Value ?? new LoadConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<ProxyConfig>>()?.Value ?? new ProxyConfig());
 
             // Services for stdout's nuget package.
             services = services
