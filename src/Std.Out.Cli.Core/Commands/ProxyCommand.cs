@@ -17,14 +17,14 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class ProxyCommand(
-        IOptionsSnapshot<ProxyConfig> _config, IDisplayService _display, IHttpResponse<DisplayModel[]> _service
+        ProxyConfig _config, IDisplayService _display, IHttpResponse<DisplayModel[]> _service
         ) : IProxyCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command, string args)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config.Value);
+            var src = GetSourceModel(command.SettingsKey, _config);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 

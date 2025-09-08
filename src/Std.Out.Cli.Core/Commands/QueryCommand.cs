@@ -13,14 +13,14 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class QueryCommand(
-        IOptionsSnapshot<LoadConfig> _config, IStdOut _service, IDisplayService _display
+        LoadConfig _config, IStdOut _service, IDisplayService _display
         ) : IQueryCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = LoadCommand.GetSourceModel(command.SettingsKey, _config.Value);
+            var src = LoadCommand.GetSourceModel(command.SettingsKey, _config);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 

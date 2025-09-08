@@ -488,3 +488,8 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.2.3
 
 * Changing the IOptions to be scoped with IOptionsSnapshot, to debug the config only loading on the first request.
+
+# 2.2.4
+
+* Changing the IOptions to inject the raw object models, instead of using the options pattern.
+

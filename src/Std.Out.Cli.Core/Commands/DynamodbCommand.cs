@@ -14,21 +14,21 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class DynamodbCommand (
-        IOptionsSnapshot<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display, IOptionsSnapshot<LoadConfig> _loadConfig, IStdOut _stdout
+        DynamodbConfig _config, IDynamodbService _service, IDisplayService _display, LoadConfig _loadConfig, IStdOut _stdout
         ) : IDynamodbCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config.Value, command.CorrelationId).Bind(x => Validate(x, command));
+            var src = GetSourceModel(command.SettingsKey, _config, command.CorrelationId).Bind(x => Validate(x, command));
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
             var items = new Response<string[]>();
 
             if (command.Action != string.Empty)
             {
-                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig.Value, _stdout);
+                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig, _stdout);
                 if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
 
                 source.IndexPartitionKeyMask = source.IndexPartitionKeyMask.Replace(CliConstants.CidMask, command.CorrelationId);

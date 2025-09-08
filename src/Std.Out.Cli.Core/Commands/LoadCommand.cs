@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class LoadCommand(
-        IOptionsSnapshot<LoadConfig> _config, IStdOut _service, IDisplayService _display
+        LoadConfig _config, IStdOut _service, IDisplayService _display
         ) : ILoadCommand
     {
         private static readonly StdOutOptionsDisk _diskSource = new StdOutOptionsDisk { RootPath = string.Empty };
@@ -25,7 +25,7 @@ namespace Std.Out.Cli.Core.Commands
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config.Value);
+            var src = GetSourceModel(command.SettingsKey, _config);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 

@@ -1,4 +1,5 @@
 ﻿using FrameworkContainers.Network.HttpCollective;
+using Microsoft.Extensions.Options;
 using Std.Out.Cli.Core.Commands;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
@@ -22,6 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (options != null) services.Configure(options);
 
+            services.AddSingleton(sp => sp.GetService<IOptions<StdConfigOptions>>()?.Value ?? new StdConfigOptions());
+
             // Services for stdout's nuget package.
             return services
                 .AddSingleton<IMarker, Marker>()
@@ -42,13 +45,21 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<CloudWatchConfig> cw = null,
             Action<S3Config> s3 = null,
             Action<DynamodbConfig> db = null,
-            Action<LoadConfig> load = null
+            Action<LoadConfig> load = null,
+            Action<ProxyConfig> proxy = null
             )
         {
             if (cw != null) services.Configure(cw);
             if (s3 != null) services.Configure(s3);
             if (db != null) services.Configure(db);
             if (load != null) services.Configure(load);
+            if (proxy != null) services.Configure(proxy);
+
+            services.AddSingleton(sp => sp.GetService<IOptions<CloudWatchConfig>>()?.Value ?? new CloudWatchConfig());
+            services.AddSingleton(sp => sp.GetService<IOptions<S3Config>>()?.Value ?? new S3Config());
+            services.AddSingleton(sp => sp.GetService<IOptions<DynamodbConfig>>()?.Value ?? new DynamodbConfig());
+            services.AddSingleton(sp => sp.GetService<IOptions<LoadConfig>>()?.Value ?? new LoadConfig());
+            services.AddSingleton(sp => sp.GetService<IOptions<ProxyConfig>>()?.Value ?? new ProxyConfig());
 
             // Services for stdout's nuget package.
             services = services

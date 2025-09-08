@@ -17,7 +17,7 @@ namespace Tests.Std.Out
         {
             _std = DI.Get<IStdOut>();
 
-            var key = DI.Get<IOptionsSnapshot<StorageKeyConfig>>().Value;
+            var key = DI.Get<IOptions<StorageKeyConfig>>().Value;
 
             _key = StorageKey.CreateWithEnvironment(key.Application, key.Environment, (key.Namespace, key.Offset.GetValueOrDefault(0)));
             _cid = "c6b8c804-34cb-4cf7-b762-d24b644831e9";
