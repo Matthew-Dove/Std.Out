@@ -484,3 +484,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.2.2
 
 * Adding Std.Out.Cli.Core to the bin folder when packing, so it's not referenced as a nuget package.
+
+# 2.2.3
+
+* Changing the IOptions to be scoped with IOptionsSnapshot, to debug the config only loading on the first request.
