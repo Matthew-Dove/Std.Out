@@ -13,7 +13,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class QueryCommand(
-        IOptions<LoadConfig> _config, IStdOut _service, IDisplayService _display
+        IOptionsSnapshot<LoadConfig> _config, IStdOut _service, IDisplayService _display
         ) : IQueryCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)

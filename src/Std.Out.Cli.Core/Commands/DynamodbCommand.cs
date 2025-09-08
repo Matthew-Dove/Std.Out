@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class DynamodbCommand (
-        IOptions<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
+        IOptionsSnapshot<DynamodbConfig> _config, IDynamodbService _service, IDisplayService _display, IOptionsSnapshot<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IDynamodbCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)

@@ -79,7 +79,7 @@ namespace Std.Out.Core.Services
     }
 
     internal sealed class StdOut(
-        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, IOptions<StdConfigOptions> _options
+        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, IOptionsSnapshot<StdConfigOptions> _options
         ) : IStdOut
     {
         private static readonly Task<Response<Unit>> _store = Task.FromResult(Unit.ResponseSuccess);

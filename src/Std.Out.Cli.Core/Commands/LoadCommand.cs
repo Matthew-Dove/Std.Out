@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class LoadCommand(
-        IOptions<LoadConfig> _config, IStdOut _service, IDisplayService _display
+        IOptionsSnapshot<LoadConfig> _config, IStdOut _service, IDisplayService _display
         ) : ILoadCommand
     {
         private static readonly StdOutOptionsDisk _diskSource = new StdOutOptionsDisk { RootPath = string.Empty };

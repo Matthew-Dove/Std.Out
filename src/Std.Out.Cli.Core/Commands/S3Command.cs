@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class S3Command(
-        IOptions<S3Config> _config, IS3Service _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
+        IOptionsSnapshot<S3Config> _config, IS3Service _service, IDisplayService _display, IOptionsSnapshot<LoadConfig> _loadConfig, IStdOut _stdout
         ) : IS3Command
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)

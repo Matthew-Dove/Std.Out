@@ -14,7 +14,7 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class CloudWatchCommand(
-        IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
+        IOptionsSnapshot<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display, IOptionsSnapshot<LoadConfig> _loadConfig, IStdOut _stdout
         ) : ICloudWatchCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
