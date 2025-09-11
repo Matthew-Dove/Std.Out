@@ -9,7 +9,7 @@
     <PublishTrimmed>False</PublishTrimmed>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Title>Standard Out</Title>
-    <Version>2.2.0</Version>
+    <Version>2.2.1</Version>
     <Authors>Dovenator</Authors>
     <PackageId>md.stdout.cli</PackageId>
     <Description>Captures output of a program to assist with debugging.
@@ -24,13 +24,7 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Added Query as a CLI option.
-Query is used to get all correlation actions taken by some application in some stage, by some user.
-
-Added Load as a CLI option.
-Load gets a specific correlation Id from an action, given a: application, stage, and user.
-
-Stage, and user parameters are optional.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added proxy instance support calling though the local CLI.</PackageReleaseNotes>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>stdout</ToolCommandName>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
