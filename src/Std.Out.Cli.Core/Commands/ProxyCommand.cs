@@ -50,7 +50,7 @@ namespace Std.Out.Cli.Core.Commands
             if (source == default) return response.LogErrorValue("Proxy source [{Key}] not found.".WithArgs(key ?? string.Empty));
 
             // Merge source with default model.
-            model.Display = source.Display == DisplayType.NotSet ? @default.Display : source.Display;
+            model.Display = source.Display == DisplayType.NotSet ? (@default?.Display ?? DisplayType.NotSet) : source.Display;
             model.Url = source.Url == null ? @default?.Url : source.Url;
             model.Headers = (source.Headers == null || source.Headers.Length == 0) ? @default?.Headers : source.Headers;
 
