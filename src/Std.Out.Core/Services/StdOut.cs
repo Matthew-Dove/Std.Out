@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Models;
 using ContainerExpressions.Expressions;
-using Microsoft.Extensions.Options;
 
 namespace Std.Out.Core.Services
 {
@@ -79,7 +78,7 @@ namespace Std.Out.Core.Services
     }
 
     internal sealed class StdOut(
-        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, IOptions<StdConfigOptions> _options
+        ILogger<StdOut> _log, IDiskStorage _disk, IS3Storage _s3, IDynamodbStorage _db, StdConfigOptions _options
         ) : IStdOut
     {
         private static readonly Task<Response<Unit>> _store = Task.FromResult(Unit.ResponseSuccess);
@@ -132,14 +131,14 @@ namespace Std.Out.Core.Services
         public async Task<Response<Unit>> Store(string correlationId)
         {
             var @namespace = Util.GetCallerNamespace();
-            var key = GetKey(_options.Value?.Key, namespaceOverride: @namespace);
-            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options?.Key, namespaceOverride: @namespace);
+            var config = GetConfig(_options?.Sources);
             return await Store(correlationId, key, config);
         }
 
         public async Task<Response<Unit>> Store(string correlationId, StorageKey key)
         {
-            var config = GetConfig(_options.Value?.Sources);
+            var config = GetConfig(_options?.Sources);
             return await Store(correlationId, key, config);
         }
 
@@ -198,14 +197,14 @@ namespace Std.Out.Core.Services
 
         public async Task<Response<Either<string, NotFound>>> Load(string action)
         {
-            var key = GetKey(_options.Value?.Key, actionOverride: action);
-            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options?.Key, actionOverride: action);
+            var config = GetConfig(_options?.Sources);
             return await Load(key, config);
         }
 
         public async Task<Response<Either<string, NotFound>>> Load(StorageKey key)
         {
-            var config = GetConfig(_options.Value?.Sources);
+            var config = GetConfig(_options?.Sources);
             return await Load(key, config);
         }
 
@@ -274,14 +273,14 @@ namespace Std.Out.Core.Services
 
         public async Task<Response<StorageKey[]>> Query()
         {
-            var key = GetKey(_options.Value?.Key, dropAction: true);
-            var config = GetConfig(_options.Value?.Sources);
+            var key = GetKey(_options?.Key, dropAction: true);
+            var config = GetConfig(_options?.Sources);
             return await Query(key, config);
         }
 
         public async Task<Response<StorageKey[]>> Query(StorageKey key)
         {
-            var config = GetConfig(_options.Value?.Sources);
+            var config = GetConfig(_options?.Sources);
             return await Query(key, config);
         }
 

@@ -7,5 +7,12 @@
         /// <para>This special value will be replaced with the correlation id that's passed in as an argument / option to the cli.</para>
         /// </summary>
         public const string CidMask = "<CID>";
+
+        /// <summary>
+        /// The mask for cli arguments; used as part of the proxy url.
+        /// <para>This sepcial value will be replaced with the args sent into the cli at runtime.</para>
+        /// </summary>
+        public const string ArgsMask = "<ARGS>";
+
     }
 }

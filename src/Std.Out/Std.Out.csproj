@@ -7,7 +7,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Title>Standard Output</Title>
 		<PackageId>md.stdout</PackageId>
-		<Version>2.2.2</Version>
+		<Version>2.2.5</Version>
 		<Authors>Matthew Dove</Authors>
 		<Description>
 			Captures output of a program to assist with debugging.

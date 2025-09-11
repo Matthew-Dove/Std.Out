@@ -1,5 +1,4 @@
 ﻿using ContainerExpressions.Containers;
-using Microsoft.Extensions.Options;
 using Std.Out.Cli.Core.Models;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models;
@@ -14,20 +13,20 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class S3Command(
-        IOptions<S3Config> _config, IS3Service _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
+        S3Config _config, IS3Service _service, IDisplayService _display, LoadConfig _loadConfig, IStdOut _stdout
         ) : IS3Command
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config.Value, command.CorrelationId, command.Path);
+            var src = GetSourceModel(command.SettingsKey, _config, command.CorrelationId, command.Path);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 
             if (command.Action != string.Empty)
             {
-                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig.Value, _stdout);
+                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig, _stdout);
                 if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
 
                 source.Prefix = source.Prefix.Replace(CliConstants.CidMask, command.CorrelationId);
@@ -83,14 +82,14 @@ namespace Std.Out.Cli.Core.Commands
             isValid = isValid && !string.IsNullOrWhiteSpace(model.Bucket);
             isValid = isValid && string.IsNullOrWhiteSpace(model.ContentType) || "json".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase) || "text".Equals(model.ContentType, StringComparison.OrdinalIgnoreCase);
             isValid = isValid && ((!string.IsNullOrWhiteSpace(model.Prefix) && model.Prefix.Contains(CliConstants.CidMask)) || !string.Empty.Equals(path));
-            isValid = isValid && ((source.Files == null || source.Files.Length == 0) || source.Files.Count(string.IsNullOrWhiteSpace) == 0);
+            isValid = isValid && ((model.Files == null || model.Files.Length == 0) || model.Files.Count(string.IsNullOrWhiteSpace) == 0);
 
             if (isValid)
             {
                 // Align optional fields.
                 if (model.Display == DisplayType.NotSet) model.Display = DisplayType.Chrome;
                 if (string.IsNullOrWhiteSpace(model.ContentType)) model.ContentType = string.Empty;
-                if (source.Files == null || source.Files.Length == 0) model.Files = Array.Empty<string>();
+                if (model.Files == null || model.Files.Length == 0) model.Files = Array.Empty<string>();
 
                 model.ContentType = model.ContentType.ToLowerInvariant();
                 if (path != string.Empty) model.Prefix = path;

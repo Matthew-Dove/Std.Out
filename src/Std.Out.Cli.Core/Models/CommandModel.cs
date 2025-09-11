@@ -5,7 +5,7 @@
         /// <summary>The target to query (i.e. CloudWatch, S3, DynamoDB).</summary>
         public string Verb { get; set; }
 
-        /// <summary>The key for the target's configuration in app settings, that defines general values for the aws managed service. </summary>
+        /// <summary>The key for the target's configuration in app settings, that defines general values for the aws managed service.</summary>
         public string SettingsKey { get; set; }
 
         /// <summary>The Correlation Id that groups requests, logs, files, etc together.</summary>
@@ -25,6 +25,12 @@
 
         /// <summary>The key to use when loading the action, in order to get the correlation Id.</summary>
         public string ActionSettingsKey { get; set; }
+
+        /// <summary>Proxy the CLI command to another instance over http (i.e. when you don't have access to the data sources locally).</summary>
+        public bool IsProxy { get; set; }
+
+        /// <summary>The key for the target's configuration in app settings, that defines general values for the proxy service.</summary>
+        public string ProxySettingsKey { get; set; }
     }
 
     internal sealed class VerbCli

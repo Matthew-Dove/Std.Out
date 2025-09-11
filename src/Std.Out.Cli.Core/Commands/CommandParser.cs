@@ -18,11 +18,23 @@ internal sealed class CommandParser : ICommandParser
 
         string key = string.Empty, cid = string.Empty, action = string.Empty, actionKey = string.Empty;
         var isValid = true;
+        var cmd = args[0].ToLowerInvariant();
+
+        var isProxy = "px".Equals(cmd) || "proxy".Equals(cmd);
+        var proxySettingsKey = default(string);
+        if (isProxy)
+        {
+            proxySettingsKey = args[1];
+            args = args[2..];
+            cmd = args[0].ToLowerInvariant();
+        }
+
         var kv = GetOptionKeyValues(args);
 
-        switch (args[0].ToLowerInvariant())
+        switch (cmd)
         {
             case "cw":
+            case "cloudwatch":
                 key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
                 cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
                 action = kv.GetOptions(OptionCli.Action, OptionCli.A);
@@ -55,12 +67,15 @@ internal sealed class CommandParser : ICommandParser
                         SettingsKey = key,
                         CorrelationId = cid,
                         Action = action,
-                        ActionSettingsKey = actionKey
+                        ActionSettingsKey = actionKey,
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
 
             case "s3":
+            case "simplestorageservice":
                 key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
                 cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
                 action = kv.GetOptions(OptionCli.Action, OptionCli.A);
@@ -106,12 +121,15 @@ internal sealed class CommandParser : ICommandParser
                         CorrelationId = cid,
                         Path = path,
                         Action = action,
-                        ActionSettingsKey = actionKey
+                        ActionSettingsKey = actionKey,
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
 
             case "db":
+            case "dynamodb":
                 key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
                 cid = kv.GetOptions(OptionCli.CorrelationId, OptionCli.C);
                 action = kv.GetOptions(OptionCli.Action, OptionCli.A);
@@ -170,27 +188,31 @@ internal sealed class CommandParser : ICommandParser
                         PartitionKey = pk,
                         SortKey = sk,
                         Action = action,
-                        ActionSettingsKey = actionKey
+                        ActionSettingsKey = actionKey,
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
 
             case "ld":
+            case "load":
                 key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
                 action = kv.GetOptions(OptionCli.Action, OptionCli.A).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Action));
 
                 if (!string.Empty.Equals(key) && !string.Empty.Equals(action))
                 {
-                    response = response.With(new CommandModel { Verb = VerbCli.Load, SettingsKey = key, Action = action });
+                    response = response.With(new CommandModel { Verb = VerbCli.Load, SettingsKey = key, Action = action, IsProxy = isProxy, ProxySettingsKey = proxySettingsKey });
                 }
                 break;
 
             case "qy":
+            case "query":
                 key = kv.GetOptions(OptionCli.Key, OptionCli.K).LogWhenEmpty("Option {Option} is required.".WithArgs(OptionCli.Key));
 
                 if (!string.Empty.Equals(key))
                 {
-                    response = response.With(new CommandModel { Verb = VerbCli.Query, SettingsKey = key });
+                    response = response.With(new CommandModel { Verb = VerbCli.Query, SettingsKey = key, IsProxy = isProxy, ProxySettingsKey = proxySettingsKey });
                 }
                 break;
 

@@ -109,6 +109,13 @@ stdout qy --key appname
 --key | -k: The name of the configuration in app settings, that defines the data sources to load from.
 ```
 
+**Proxy**
+```console
+stdout px appname "verb [options] [flags]"
+
+Prefix "px" - with the proxy "source key" to any valid command; to execute a StdOut CLI on a remote instance.
+```
+
 # AppSettings
 
 The `appsettings.json` file is found at the tool's installed location: `%USERPROFILE%\.dotnet\tools`  
@@ -219,6 +226,22 @@ Where `{RUNTIME}` is the installed package's runtime, i.e. "**net8.0**".
         }
       }
     }
+  },
+  "Proxy": {
+    "Defaults": {
+      "Display": "console|chrome|firefox"
+    },
+    "Sources": {
+      "AppName": {
+        "Url": "https://dev.localhost:8080/api/cli?args=<ARGS>",
+        "Headers": [
+          {
+            "Key": "Accept",
+            "Value": "application/json"
+          }
+        ]
+      }
+    }
   }
 }
 ```
@@ -229,7 +252,7 @@ The "app names" under `Sources` are matched to the `--key` command line argument
 If sensible defaults can be applied to all (*or most*) sources, then you would only need to set what's different for each source.  
 Custom settings can be applied for each "app" under `Sources`.  
 
-Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` sections in app settings.   
+Each verb: **px**, **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` sections in app settings.   
 
 ## CloudWatch
 
@@ -275,6 +298,12 @@ Each verb: **cw**, **s3**, and **db**, have their own `Defaults`, and `Sources` 
 * `StdOut:Sources:DynamoDb:TableName:` The name of the DynamoDB table (_optional: skip DynamoDB config_).
 * `StdOut:Sources:DynamoDb:PartitionKeyName:` The name of the Partition Key in the DynamoDB table (_where the key is stored_) (_optional: skip DynamoDB config_).
 * `StdOut:Sources:DynamoDb:SortKeyName:` The name of the Sort Key in the DynamoDB table (_where the key's action is split out, and stored_) (_optional: depending on the table setup_).
+
+## Proxy
+
+* `Display:` How you'd like to view the output; console or web browser (_optional: console_).
+* `Url:` The url to the remote web server hosting a CLI instance / StdOut nuget package. The CLI commands are merged with `<ARGS>`, expected to be a querystring parameter (_required_).
+* `Headers:` An array of objects containing `key`, and `value` `string` fields. Added to the outgoing http request for the remote server (_optional: none_).
 
 # Nuget Package
 
@@ -337,7 +366,26 @@ builder.Services
 var host = builder.Build();
 host.Services.AddContainerExpressionsLogging();
 var stdout = host.Services.GetRequiredService<IStdOut>();
+
+// Alternatively, if you're supporting proxy instances running stdout / stdcli; this would be the config setup:
+
+// Bind config sections (reference the CLI's App Settings above for the model values).
+// You can change the section paths to suite your config setup, instead of using the provided ones.
+// You can also skip these bindings, and pass the populated objects to the AddStdCliServices() function below.
+builder.Services
+    .Configure<StdConfigOptions>(builder.Configuration.GetSection(StdConfigOptions.SECTION_NAME))
+    .Configure<CloudWatchConfig>(builder.Configuration.GetSection(CloudWatchConfig.SECTION_NAME))
+    .Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME))
+    .Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME))
+    .Configure<LoadConfig>(builder.Configuration.GetSection(LoadConfig.SECTION_NAME))
+    .Configure<AppConfig>(configuration.GetSection(AppConfig.SectionName))
+    ;
+
+// Add StdOut / StdCli services.
+builder.Services.AddStdCliServices();
 ```
+
+Note: _this setup below does not show the optional CLI / proxy config; refer to the CLI config above; as you'll need both of them_.
 
 ```json
 {
@@ -444,6 +492,10 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Updated nuget packages.
 
+## 2.2.1
+
+* Added proxy instance support calling though the local CLI.
+
 # Package Changelog
 
 ## 1.0.0
@@ -484,3 +536,15 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.2.2
 
 * Adding Std.Out.Cli.Core to the bin folder when packing, so it's not referenced as a nuget package.
+
+# 2.2.3
+
+* Changing the IOptions to be scoped with IOptionsSnapshot, to debug the config only loading on the first request.
+
+# 2.2.4
+
+* Changing the IOptions to inject the raw object models, instead of using the options pattern.
+
+# 2.2.5
+
+* Setting scoped IOptionsSnapshot for config models.

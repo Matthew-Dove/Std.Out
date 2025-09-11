@@ -1,9 +1,11 @@
 ﻿using ContainerExpressions.Containers;
 using FrameworkContainers.Infrastructure;
+using FrameworkContainers.Network.HttpCollective;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Std.Out.Cli.Core.Commands;
 using Std.Out.Cli.Core.Models;
 using Std.Out.Cli.Core.Services;
@@ -28,6 +30,12 @@ namespace Std.Out.Cli
 
             try
             {
+#if DEBUG
+                if (Debugger.IsAttached)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed; Console.WriteLine(string.Join(' ', args)); Console.ResetColor(); Console.WriteLine();
+                }
+#endif
                 var sw = Stopwatch.GetTimestamp();
                 host = BuildHost(args);
 
@@ -69,6 +77,14 @@ namespace Std.Out.Cli
             builder.Services.Configure<S3Config>(builder.Configuration.GetSection(S3Config.SECTION_NAME));
             builder.Services.Configure<DynamodbConfig>(builder.Configuration.GetSection(DynamodbConfig.SECTION_NAME));
             builder.Services.Configure<LoadConfig>(builder.Configuration.GetSection(LoadConfig.SECTION_NAME));
+            builder.Services.Configure<ProxyConfig>(builder.Configuration.GetSection(ProxyConfig.SECTION_NAME));
+
+            builder.Services.AddSingleton(sp => new StdConfigOptions());
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<CloudWatchConfig>>().Value);
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<S3Config>>().Value);
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<DynamodbConfig>>().Value);
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<LoadConfig>>().Value);
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ProxyConfig>>().Value);
 
             builder.Services
                 .AddSingleton<IMarker, Marker>()
@@ -87,6 +103,8 @@ namespace Std.Out.Cli
                 .AddSingleton<IDynamodbCommand, DynamodbCommand>()
                 .AddSingleton<IQueryCommand, QueryCommand>()
                 .AddSingleton<ILoadCommand, LoadCommand>()
+                .AddSingleton<IProxyCommand, ProxyCommand>()
+                .AddSingleton(typeof(IHttpResponse<>), typeof(HttpResponse<>))
                 ;
 
             if (noLog) builder.Logging.ClearProviders();

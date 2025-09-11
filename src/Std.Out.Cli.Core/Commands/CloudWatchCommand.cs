@@ -1,5 +1,4 @@
 ﻿using ContainerExpressions.Containers;
-using Microsoft.Extensions.Options;
 using Std.Out.Cli.Core.Models;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models;
@@ -14,20 +13,20 @@ namespace Std.Out.Cli.Core.Commands
     }
 
     internal sealed class CloudWatchCommand(
-        IOptions<CloudWatchConfig> _config, ICloudWatchService _service, IDisplayService _display, IOptions<LoadConfig> _loadConfig, IStdOut _stdout
+        CloudWatchConfig _config, ICloudWatchService _service, IDisplayService _display, LoadConfig _loadConfig, IStdOut _stdout
         ) : ICloudWatchCommand
     {
         public async Task<Response<Either<BadRequest, Unit>>> Execute(CommandModel command)
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config.Value);
+            var src = GetSourceModel(command.SettingsKey, _config);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 
             if (command.Action != string.Empty)
             {
-                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig.Value, _stdout);
+                var correlationId = await LoadCommand.LoadCorrelationIdFromAction(command, _loadConfig, _stdout);
                 if (!correlationId || correlationId.IsTrue(x => x.TryGetT1(out _))) return correlationId;
             }
 

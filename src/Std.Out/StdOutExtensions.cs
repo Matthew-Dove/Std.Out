@@ -1,4 +1,6 @@
-﻿using Std.Out.Cli.Core.Commands;
+﻿using FrameworkContainers.Network.HttpCollective;
+using Microsoft.Extensions.Options;
+using Std.Out.Cli.Core.Commands;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Services;
@@ -21,6 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (options != null) services.Configure(options);
 
+            services.AddSingleton(sp => sp.GetService<IOptions<StdConfigOptions>>()?.Value ?? new StdConfigOptions());
+
             // Services for stdout's nuget package.
             return services
                 .AddSingleton<IMarker, Marker>()
@@ -41,18 +45,27 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<CloudWatchConfig> cw = null,
             Action<S3Config> s3 = null,
             Action<DynamodbConfig> db = null,
-            Action<LoadConfig> load = null
+            Action<LoadConfig> load = null,
+            Action<ProxyConfig> proxy = null
             )
         {
             if (cw != null) services.Configure(cw);
             if (s3 != null) services.Configure(s3);
             if (db != null) services.Configure(db);
             if (load != null) services.Configure(load);
+            if (proxy != null) services.Configure(proxy);
+
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<CloudWatchConfig>>()?.Value ?? new CloudWatchConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<S3Config>>()?.Value ?? new S3Config());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<DynamodbConfig>>()?.Value ?? new DynamodbConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<LoadConfig>>()?.Value ?? new LoadConfig());
+            services.AddScoped(sp => sp.GetService<IOptionsSnapshot<ProxyConfig>>()?.Value ?? new ProxyConfig());
 
             // Services for stdout's nuget package.
             services = services
                 .AddStdOutServices(options)
                 .AddSingleton<ICloudWatchService, CloudWatchService>()
+                .AddSingleton(typeof(IHttpResponse<>), typeof(HttpResponse<>))
                 ;
 
             // Services for stdout's cli.
@@ -64,6 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<IDynamodbCommand, DynamodbCommand>()
                 .AddScoped<IQueryCommand, QueryCommand>()
                 .AddScoped<ILoadCommand, LoadCommand>()
+                .AddScoped<IProxyCommand, ProxyCommand>()
                 ;
 
             // Services for the stdout nuget package to interact with the cli.
