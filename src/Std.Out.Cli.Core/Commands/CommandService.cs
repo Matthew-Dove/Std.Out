@@ -22,7 +22,7 @@ namespace Std.Out.Cli.Core.Commands
 
             if (command.IsProxy)
             {
-                response = await _px.Execute(command, string.Join(' ', args[1..]));
+                response = await _px.Execute(command, string.Join(' ', args[2..]));
             }
             else if (VerbCli.CloudWatch.Equals(command.Verb))
             {

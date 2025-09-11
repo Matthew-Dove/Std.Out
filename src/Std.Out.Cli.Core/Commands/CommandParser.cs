@@ -21,9 +21,11 @@ internal sealed class CommandParser : ICommandParser
         var cmd = args[0].ToLowerInvariant();
 
         var isProxy = "px".Equals(cmd) || "proxy".Equals(cmd);
+        var proxySettingsKey = default(string);
         if (isProxy)
         {
-            args = args[1..];
+            proxySettingsKey = args[1];
+            args = args[2..];
             cmd = args[0].ToLowerInvariant();
         }
 
@@ -66,7 +68,8 @@ internal sealed class CommandParser : ICommandParser
                         CorrelationId = cid,
                         Action = action,
                         ActionSettingsKey = actionKey,
-                        IsProxy = isProxy
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
@@ -119,7 +122,8 @@ internal sealed class CommandParser : ICommandParser
                         Path = path,
                         Action = action,
                         ActionSettingsKey = actionKey,
-                        IsProxy = isProxy
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
@@ -185,7 +189,8 @@ internal sealed class CommandParser : ICommandParser
                         SortKey = sk,
                         Action = action,
                         ActionSettingsKey = actionKey,
-                        IsProxy = isProxy
+                        IsProxy = isProxy,
+                        ProxySettingsKey = proxySettingsKey
                     });
                 }
                 break;
@@ -197,7 +202,7 @@ internal sealed class CommandParser : ICommandParser
 
                 if (!string.Empty.Equals(key) && !string.Empty.Equals(action))
                 {
-                    response = response.With(new CommandModel { Verb = VerbCli.Load, SettingsKey = key, Action = action, IsProxy = isProxy });
+                    response = response.With(new CommandModel { Verb = VerbCli.Load, SettingsKey = key, Action = action, IsProxy = isProxy, ProxySettingsKey = proxySettingsKey });
                 }
                 break;
 
@@ -207,7 +212,7 @@ internal sealed class CommandParser : ICommandParser
 
                 if (!string.Empty.Equals(key))
                 {
-                    response = response.With(new CommandModel { Verb = VerbCli.Query, SettingsKey = key, IsProxy = isProxy });
+                    response = response.With(new CommandModel { Verb = VerbCli.Query, SettingsKey = key, IsProxy = isProxy, ProxySettingsKey = proxySettingsKey });
                 }
                 break;
 

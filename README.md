@@ -495,4 +495,4 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 # 2.2.5
 
-* Setting scoped IOptionsSnapshot for config.
+* Setting scoped IOptionsSnapshot for config models.

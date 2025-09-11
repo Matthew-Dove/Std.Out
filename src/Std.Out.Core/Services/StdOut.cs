@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Std.Out.Core.Models.Config;
 using Std.Out.Core.Models;
 using ContainerExpressions.Expressions;
-using Microsoft.Extensions.Options;
 
 namespace Std.Out.Core.Services
 {

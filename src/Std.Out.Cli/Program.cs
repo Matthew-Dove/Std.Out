@@ -30,6 +30,12 @@ namespace Std.Out.Cli
 
             try
             {
+#if DEBUG
+                if (Debugger.IsAttached)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed; Console.WriteLine(string.Join(' ', args)); Console.ResetColor(); Console.WriteLine();
+                }
+#endif
                 var sw = Stopwatch.GetTimestamp();
                 host = BuildHost(args);
 

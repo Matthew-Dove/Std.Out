@@ -1,7 +1,6 @@
 ﻿using ContainerExpressions.Containers;
 using FrameworkContainers.Network.HttpCollective;
 using FrameworkContainers.Network.HttpCollective.Models;
-using Microsoft.Extensions.Options;
 using Std.Out.Cli.Core.Models;
 using Std.Out.Cli.Core.Services;
 using Std.Out.Core.Models;
@@ -24,7 +23,7 @@ namespace Std.Out.Cli.Core.Commands
         {
             var response = new Response<Either<BadRequest, Unit>>();
 
-            var src = GetSourceModel(command.SettingsKey, _config);
+            var src = GetSourceModel(command.ProxySettingsKey, _config);
             if (!src) return response.With(new BadRequest());
             var source = src.Value;
 
@@ -46,9 +45,9 @@ namespace Std.Out.Cli.Core.Commands
             var response = new Response<ProxySourceModel>();
             var model = new ProxySourceModel();
             var @default = config.Defaults;
-            var source = config.Sources.GetValueOrDefault(key, default);
+            var source = string.IsNullOrEmpty(key) ? default : config.Sources.GetValueOrDefault(key, default);
             if (source == default) source = config.Sources.FirstOrDefault(x => x.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).Value;
-            if (source == default) return response.LogErrorValue("Proxy source [{Key}] not found.".WithArgs(key));
+            if (source == default) return response.LogErrorValue("Proxy source [{Key}] not found.".WithArgs(key ?? string.Empty));
 
             // Merge source with default model.
             model.Display = source.Display == DisplayType.NotSet ? @default.Display : source.Display;
