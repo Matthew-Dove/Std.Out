@@ -496,6 +496,10 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Added proxy instance support calling though the local CLI.
 
+# 3.0.0
+
+* Updated framework to dotnet 10.
+
 # Package Changelog
 
 ## 1.0.0
@@ -548,3 +552,7 @@ If you only want a particular source to say: read, and query, but **not** to sto
 # 2.2.5
 
 * Setting scoped IOptionsSnapshot for config models.
+
+# 3.0.0
+
+* Updated framework to dotnet 10.

@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <PublishTrimmed>False</PublishTrimmed>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Title>Standard Out</Title>
-    <Version>2.2.1</Version>
+    <Version>3.0.0</Version>
     <Authors>Dovenator</Authors>
     <PackageId>md.stdout.cli</PackageId>
     <Description>Captures output of a program to assist with debugging.
@@ -24,7 +24,7 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Added proxy instance support calling though the local CLI.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated framework to dotnet 10.</PackageReleaseNotes>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>stdout</ToolCommandName>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>
@@ -38,6 +38,7 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
   <ItemGroup>
     <Content Include="appsettings.debug.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  <Pack>false</Pack>
     </Content>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
