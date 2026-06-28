@@ -9,7 +9,7 @@
     <PublishTrimmed>False</PublishTrimmed>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Title>Standard Out</Title>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <Authors>Dovenator</Authors>
     <PackageId>md.stdout.cli</PackageId>
     <Description>Captures output of a program to assist with debugging.
@@ -24,7 +24,9 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes>Updated framework to dotnet 10.</PackageReleaseNotes>
+    <PackageReleaseNotes># 3.0.1
+
+* Updated nuget packages.</PackageReleaseNotes>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>stdout</ToolCommandName>
     <PackageOutputPath>..\..\nupkg</PackageOutputPath>

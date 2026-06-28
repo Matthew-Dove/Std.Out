@@ -7,7 +7,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Title>Standard Output</Title>
 		<PackageId>md.stdout</PackageId>
-		<Version>3.0.0</Version>
+		<Version>3.0.1</Version>
 		<Authors>Matthew Dove</Authors>
 		<Description>
 			Captures output of a program to assist with debugging.
@@ -23,7 +23,9 @@
 		<RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>aws;cloudwatch;logs;</PackageTags>
-		<PackageReleaseNotes>Updated framework to dotnet 10.</PackageReleaseNotes>
+		<PackageReleaseNotes># 3.0.1
+
+* Updated nuget packages.</PackageReleaseNotes>
 		<PackageOutputPath>..\..\nupkg</PackageOutputPath>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<IncludeSymbols>True</IncludeSymbols>
@@ -59,12 +61,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.13.1" />
-		<PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.10.2" />
-		<PackageReference Include="AWSSDK.S3" Version="4.0.14.1" />
-		<PackageReference Include="FrameworkContainers" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+		<PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.29.1" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.21.7" />
+		<PackageReference Include="AWSSDK.S3" Version="4.0.25.3" />
+		<PackageReference Include="FrameworkContainers" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
