@@ -504,6 +504,10 @@ If you only want a particular source to say: read, and query, but **not** to sto
 
 * Updated nuget packages.
 
+# 3.0.2
+
+* Updated nuget packages.
+
 # Package Changelog
 
 ## 1.0.0
@@ -562,5 +566,9 @@ If you only want a particular source to say: read, and query, but **not** to sto
 * Updated framework to dotnet 10.
 
 # 3.0.1
+
+* Updated nuget packages.
+
+# 3.0.2
 
 * Updated nuget packages.

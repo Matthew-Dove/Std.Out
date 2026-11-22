@@ -24,7 +24,7 @@ Can pull data from CloudWatch, S3, and DynamoDB.</Description>
     <RepositoryUrl>https://github.com/Matthew-Dove/Std.Out</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>aws;cloudwatch;logs;</PackageTags>
-    <PackageReleaseNotes># 3.0.1
+    <PackageReleaseNotes># 3.0.2
 
 * Updated nuget packages.</PackageReleaseNotes>
     <PackAsTool>True</PackAsTool>
