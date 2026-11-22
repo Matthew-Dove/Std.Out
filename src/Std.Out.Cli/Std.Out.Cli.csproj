@@ -9,7 +9,7 @@
     <PublishTrimmed>False</PublishTrimmed>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Title>Standard Out</Title>
-    <Version>3.0.1</Version>
+    <Version>3.0.2</Version>
     <Authors>Dovenator</Authors>
     <PackageId>md.stdout.cli</PackageId>
     <Description>Captures output of a program to assist with debugging.
